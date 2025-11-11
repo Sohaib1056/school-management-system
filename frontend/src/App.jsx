@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './assets/css/App.css';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import AuthLayout from './layouts/auth';
+import AdminLayout from './layouts/admin';
+import RTLLayout from './layouts/rtl';
+import {
+  ChakraProvider,
+  // extendTheme
+} from '@chakra-ui/react';
+import initialTheme from './theme/theme'; //  { themeGreen }
+import { useState } from 'react';
+import { AuthProvider } from './contexts/AuthContext';
+import { SidebarContext } from './contexts/SidebarContext';
+import ProtectedRoute from './contexts/ProtectedRoute';
+import ReduxWrapper from './components/wrappers/ReduxWrapper';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function Main() {
+  // eslint-disable-next-line
+  const [currentTheme, setCurrentTheme] = useState(initialTheme);
+  const [toggleSidebar, setToggleSidebar] = useState(false);
+  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <ReduxWrapper>
+      <ChakraProvider theme={currentTheme}>
+        <SidebarContext.Provider
+          value={{
+            toggleSidebar,
+            setToggleSidebar,
+          }}
+        >
+          {/* The AuthProvider must be inside Routes to access useNavigate hook */}
+          <Routes>
+            <Route
+              path="auth/*"
+              element={
+                <AuthProvider>
+                  <AuthLayout />
+                </AuthProvider>
+              }
+            />
+            <Route
+              path="admin/*"
+              element={
+                <AuthProvider>
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                  </ProtectedRoute>
+                </AuthProvider>
+              }
+            />
+            <Route
+              path="rtl/*"
+              element={
+                <AuthProvider>
+                  <RTLLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                </AuthProvider>
+              }
+            />
+            <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
+          </Routes>
+        </SidebarContext.Provider>
+      </ChakraProvider>
+    </ReduxWrapper>
+  );
 }
-
-export default App
