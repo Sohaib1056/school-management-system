@@ -23,7 +23,6 @@ export default defineConfig({
     alias: {
       // Set up src as base for all imports
       '~': path.resolve(__dirname, 'src'),
-      '/': path.resolve(__dirname, './'),
       // Add all the directories as aliases
       'src': path.resolve(__dirname, 'src'),
       'assets': path.resolve(__dirname, 'src/assets'),
