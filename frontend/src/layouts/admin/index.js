@@ -89,11 +89,14 @@ export default function Dashboard(props) {
     }
     return activeNavbar;
   };
+  // Ensure child route paths are relative to /admin by removing any leading slash
+  const normalizePath = (p) => (p || '').replace(/^\//, '');
+
   const getRoutes = (routes) => {
     return routes.flatMap((route, key) => {
       if (route.layout === '/admin') {
         return (
-          <Route path={`${route.path}`} element={route.component} key={`route-${route.path}`} />
+          <Route path={`${normalizePath(route.path)}`} element={route.component} key={`route-${route.path}`} />
         );
       }
       if (route.collapse && route.items) {
@@ -102,7 +105,7 @@ export default function Dashboard(props) {
           if (item.layout === '/admin') {
             return (
               <Route 
-                path={`${item.path}`} 
+                path={`${normalizePath(item.path)}`} 
                 element={item.component} 
                 key={`subroute-${item.path}`} 
               />

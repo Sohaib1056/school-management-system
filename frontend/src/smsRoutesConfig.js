@@ -227,7 +227,7 @@ export const getSMSRoutes = () => {
       items: [
         {
           name: 'Classes',
-          layout: '/admin',
+          layout: '/admin',          
           path: '/academics/classes',
           component: <ComingSoon />,
         },
