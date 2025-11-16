@@ -19,6 +19,7 @@ import {
   TagCloseButton,
   HStack,
   IconButton,
+  Flex,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';

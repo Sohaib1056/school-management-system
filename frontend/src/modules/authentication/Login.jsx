@@ -71,7 +71,7 @@ function SignIn() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
+    await login(email, password, rememberMe);
   };
 
   // Quick login for demo

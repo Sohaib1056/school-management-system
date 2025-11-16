@@ -169,8 +169,8 @@ const TeacherPerformance = () => {
         <Card>
           <Flex direction="column" h="100%" p={5}>
             <Flex align="center" mb={3}>
-              <Icon as={MdStarRate} boxSize={6} color="blue.500" mr={3} />
-              <Text fontSize="lg" fontWeight="medium">Average Rating</Text>
+              <Icon as={MdStarRate} boxSize={8} color="blue.500" mr={3} />
+              <Text fontSize="xl" fontWeight="600">Average Rating</Text>
             </Flex>
             <Text fontSize="3xl" fontWeight="bold" color="blue.500">
               {averageOverall.toFixed(1)}/100
@@ -188,8 +188,8 @@ const TeacherPerformance = () => {
         <Card>
           <Flex direction="column" h="100%" p={5}>
             <Flex align="center" mb={3}>
-              <Icon as={MdTrendingUp} boxSize={6} color="green.500" mr={3} />
-              <Text fontSize="lg" fontWeight="medium">Excellent Performers</Text>
+              <Icon as={MdTrendingUp} boxSize={8} color="green.500" mr={3} />
+              <Text fontSize="xl" fontWeight="600">Excellent Performers</Text>
             </Flex>
             <Text fontSize="3xl" fontWeight="bold" color="green.500">
               {excellentCount}
@@ -203,8 +203,8 @@ const TeacherPerformance = () => {
         <Card>
           <Flex direction="column" h="100%" p={5}>
             <Flex align="center" mb={3}>
-              <Icon as={MdTimer} boxSize={6} color="orange.500" mr={3} />
-              <Text fontSize="lg" fontWeight="medium">Needs Improvement</Text>
+              <Icon as={MdTimer} boxSize={8} color="orange.500" mr={3} />
+              <Text fontSize="xl" fontWeight="600">Needs Improvement</Text>
             </Flex>
             <Text fontSize="3xl" fontWeight="bold" color="orange.500">
               {needsImprovementCount || 0}

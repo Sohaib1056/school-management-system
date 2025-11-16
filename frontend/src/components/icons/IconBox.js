@@ -9,6 +9,8 @@ export default function IconBox(props) {
       alignItems={"center"}
       justifyContent={"center"}
       borderRadius={"50%"}
+      boxShadow="sm"
+      fontSize={rest.fontSize || "30px"}
       {...rest}>
       {icon}
     </Flex>

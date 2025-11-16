@@ -211,10 +211,10 @@ const TeacherAttendance = () => {
         <Card>
           <Flex direction="column" h="100%" p={4}>
             <Flex align="center" mb={2}>
-              <Icon as={MdCalendarToday} boxSize={6} color="blue.500" mr={2} />
-              <Text fontSize="lg" fontWeight="medium">Total</Text>
+              <Icon as={MdCalendarToday} boxSize={8} color="blue.500" mr={2} />
+              <Text fontSize="xl" fontWeight="600">Total</Text>
             </Flex>
-            <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+            <Text fontSize="3xl" fontWeight="bold" color="blue.500">
               {stats.total}
             </Text>
             <Text fontSize="sm" color={textColorSecondary} mt="auto">
@@ -226,10 +226,10 @@ const TeacherAttendance = () => {
         <Card>
           <Flex direction="column" h="100%" p={4}>
             <Flex align="center" mb={2}>
-              <Icon as={MdCheckCircle} boxSize={6} color="green.500" mr={2} />
-              <Text fontSize="lg" fontWeight="medium">Present</Text>
+              <Icon as={MdCheckCircle} boxSize={8} color="green.500" mr={2} />
+              <Text fontSize="xl" fontWeight="600">Present</Text>
             </Flex>
-            <Text fontSize="2xl" fontWeight="bold" color="green.500">
+            <Text fontSize="3xl" fontWeight="bold" color="green.500">
               {stats.present}
             </Text>
             <Text fontSize="sm" color={textColorSecondary} mt="auto">
@@ -241,10 +241,10 @@ const TeacherAttendance = () => {
         <Card>
           <Flex direction="column" h="100%" p={4}>
             <Flex align="center" mb={2}>
-              <Icon as={MdCancel} boxSize={6} color="red.500" mr={2} />
-              <Text fontSize="lg" fontWeight="medium">Absent</Text>
+              <Icon as={MdCancel} boxSize={8} color="red.500" mr={2} />
+              <Text fontSize="xl" fontWeight="600">Absent</Text>
             </Flex>
-            <Text fontSize="2xl" fontWeight="bold" color="red.500">
+            <Text fontSize="3xl" fontWeight="bold" color="red.500">
               {stats.absent}
             </Text>
             <Text fontSize="sm" color={textColorSecondary} mt="auto">
@@ -256,10 +256,10 @@ const TeacherAttendance = () => {
         <Card>
           <Flex direction="column" h="100%" p={4}>
             <Flex align="center" mb={2}>
-              <Icon as={MdAccessTime} boxSize={6} color="orange.500" mr={2} />
-              <Text fontSize="lg" fontWeight="medium">Late</Text>
+              <Icon as={MdAccessTime} boxSize={8} color="orange.500" mr={2} />
+              <Text fontSize="xl" fontWeight="600">Late</Text>
             </Flex>
-            <Text fontSize="2xl" fontWeight="bold" color="orange.500">
+            <Text fontSize="3xl" fontWeight="bold" color="orange.500">
               {stats.late}
             </Text>
             <Text fontSize="sm" color={textColorSecondary} mt="auto">

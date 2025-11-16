@@ -6,6 +6,7 @@ import {
   Heading,
   HStack,
   Icon,
+  IconButton,
   Input,
   InputGroup,
   InputLeftElement,
@@ -25,23 +26,26 @@ import {
   SimpleGrid,
   Select,
   useColorModeValue,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
 } from '@chakra-ui/react';
 import Card from 'components/card/Card.js';
-import { SearchIcon } from '@chakra-ui/icons';
+import { SearchIcon, AddIcon, DownloadIcon, ViewIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import { 
-  MdAdd, 
-  MdEdit, 
-  MdDelete,
-  MdMoreVert, 
-  MdPerson, 
-  MdAccessTime,
-  MdAssignment,
-  MdCalendarToday
+  MdMoreVert,
+  MdPeople,
+  MdSchool,
+  MdTrendingUp,
+  MdPersonAdd,
 } from 'react-icons/md';
 
 function TeacherList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   
   // Color mode values
   const textColor = useColorModeValue('gray.800', 'white');
@@ -110,14 +114,18 @@ function TeacherList() {
   ];
 
   // Filter teachers based on search and filters
-  const filteredTeachers = teachers.filter(teacher => {
-    const matchesSearch = teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         teacher.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDepartment = !departmentFilter || teacher.department.toLowerCase() === departmentFilter.toLowerCase();
-    const matchesStatus = !statusFilter || teacher.status.toLowerCase() === statusFilter.toLowerCase();
-    
+  const filteredTeachers = teachers.filter((teacher) => {
+    const name = teacher.name || '';
+    const email = teacher.email || '';
+    const subject = teacher.subject || '';
+    const dept = teacher.department || '';
+    const status = teacher.status || '';
+
+    const matchesSearch = [name, email, subject]
+      .some((v) => v.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesDepartment = !departmentFilter || dept.toLowerCase() === departmentFilter.toLowerCase();
+    const matchesStatus = !statusFilter || status.toLowerCase() === statusFilter.toLowerCase();
+
     return matchesSearch && matchesDepartment && matchesStatus;
   });
 
@@ -168,95 +176,87 @@ function TeacherList() {
 
       {/* Statistics Cards */}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mb={6}>
-        <Card>
-          <CardBody>
+        <Card p={6}>
             <Stat>
               <Flex align="center" mb={2}>
-                <Box p={2} bg="blue.100" borderRadius="lg" mr={3}>
-                  <Icon as={MdPeople} boxSize={6} color="blue.500" />
+                <Box p={3} bg="blue.100" borderRadius="lg" mr={3}>
+                  <Icon as={MdPeople} boxSize={8} color="blue.500" />
                 </Box>
-                <StatLabel fontSize="sm" color="gray.600">
+                <StatLabel fontSize="md" fontWeight="600" color="gray.600">
                   Total Teachers
                 </StatLabel>
               </Flex>
-              <StatNumber fontSize="2xl" color="gray.800">
+              <StatNumber fontSize="3xl" fontWeight="bold" color="gray.800">
                 {stats.total}
               </StatNumber>
-              <StatHelpText color="green.500">
+              <StatHelpText color="green.500" fontSize="sm">
                 <Icon as={MdTrendingUp} mr={1} />
                 +2% from last month
               </StatHelpText>
             </Stat>
-          </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
+        <Card p={6}>
             <Stat>
               <Flex align="center" mb={2}>
-                <Box p={2} bg="green.100" borderRadius="lg" mr={3}>
-                  <Icon as={MdSchool} boxSize={6} color="green.500" />
+                <Box p={3} bg="green.100" borderRadius="lg" mr={3}>
+                  <Icon as={MdSchool} boxSize={8} color="green.500" />
                 </Box>
-                <StatLabel fontSize="sm" color="gray.600">
+                <StatLabel fontSize="md" fontWeight="600" color="gray.600">
                   Active Teachers
                 </StatLabel>
               </Flex>
-              <StatNumber fontSize="2xl" color="gray.800">
+              <StatNumber fontSize="3xl" fontWeight="bold" color="gray.800">
                 {stats.active}
               </StatNumber>
-              <StatHelpText color="green.500">
+              <StatHelpText color="green.500" fontSize="sm">
                 Currently teaching
               </StatHelpText>
             </Stat>
-          </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
+        <Card p={6}>
             <Stat>
               <Flex align="center" mb={2}>
-                <Box p={2} bg="orange.100" borderRadius="lg" mr={3}>
-                  <Icon as={MdPersonAdd} boxSize={6} color="orange.500" />
+                <Box p={3} bg="orange.100" borderRadius="lg" mr={3}>
+                  <Icon as={MdPersonAdd} boxSize={8} color="orange.500" />
                 </Box>
-                <StatLabel fontSize="sm" color="gray.600">
+                <StatLabel fontSize="md" fontWeight="600" color="gray.600">
                   On Leave
                 </StatLabel>
               </Flex>
-              <StatNumber fontSize="2xl" color="gray.800">
+              <StatNumber fontSize="3xl" fontWeight="bold" color="gray.800">
                 {stats.onLeave}
               </StatNumber>
-              <StatHelpText color="orange.500">
+              <StatHelpText color="orange.500" fontSize="sm">
                 Temporarily away
               </StatHelpText>
             </Stat>
-          </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
+        <Card p={6}>
             <Stat>
               <Flex align="center" mb={2}>
-                <Box p={2} bg="purple.100" borderRadius="lg" mr={3}>
-                  <Icon as={MdSchool} boxSize={6} color="purple.500" />
+                <Box p={3} bg="purple.100" borderRadius="lg" mr={3}>
+                  <Icon as={MdSchool} boxSize={8} color="purple.500" />
                 </Box>
-                <StatLabel fontSize="sm" color="gray.600">
+                <StatLabel fontSize="md" fontWeight="600" color="gray.600">
                   Departments
                 </StatLabel>
               </Flex>
-              <StatNumber fontSize="2xl" color="gray.800">
+              <StatNumber fontSize="3xl" fontWeight="bold" color="gray.800">
                 {stats.departments}
               </StatNumber>
-              <StatHelpText color="purple.500">
+              <StatHelpText color="purple.500" fontSize="sm">
                 Academic departments
               </StatHelpText>
             </Stat>
-          </CardBody>
-        </Card>
+          </Card>
       </SimpleGrid>
 
       {/* Search and Filters */}
       <Card mb={6}>
-        <CardBody>
+        <Box p={4}>
           <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
             <InputGroup flex={2}>
               <InputLeftElement>
@@ -289,12 +289,12 @@ function TeacherList() {
               <option value="on leave">On Leave</option>
             </Select>
           </Flex>
-        </CardBody>
+        </Box>
       </Card>
 
       {/* Teachers Table */}
       <Card>
-        <CardHeader>
+        <Box p={4}>
           <Flex justify="space-between" align="center">
             <Heading size="md" color="gray.800">
               Teachers List ({filteredTeachers.length})
@@ -305,9 +305,9 @@ function TeacherList() {
               </Button>
             </HStack>
           </Flex>
-        </CardHeader>
+        </Box>
         
-        <CardBody pt={0}>
+        <Box pt={0} px={4} pb={4}>
           <Box overflowX="auto">
             <Table variant="simple">
               <Thead>
@@ -416,7 +416,7 @@ function TeacherList() {
               </HStack>
             </Flex>
           )}
-
+          
           {/* No Results */}
           {filteredTeachers.length === 0 && (
             <Box textAlign="center" py={10}>
@@ -429,7 +429,7 @@ function TeacherList() {
               </Text>
             </Box>
           )}
-        </CardBody>
+        </Box>
       </Card>
     </Box>
   );

@@ -27,16 +27,23 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const storedToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-        const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-        
-        if (storedToken && storedUser) {
-          const userData = JSON.parse(storedUser);
+        // Always prefer sessionStorage (fresh session auth only)
+        const sesToken = sessionStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        const sesUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+
+        if (sesToken && sesUser) {
+          const userData = JSON.parse(sesUser);
           setUser(userData);
           setIsAuthenticated(true);
         }
+
+        // Proactively clear any stale persistent tokens to avoid auto-login
+        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
       } catch (e) {
         console.error('Error initializing auth:', e);
+        sessionStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.USER_DATA);
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
       } finally {
@@ -48,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, remember = false) => {
     setLoading(true);
     setError(null);
     try {
@@ -59,8 +66,17 @@ export const AuthProvider = ({ children }) => {
       const token = 'mock-jwt-token-' + Date.now();
       const userData = { ...foundUser, token, loginTime: new Date().toISOString() };
 
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      // Persist auth based on remember flag
+      if (remember) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      } else {
+        sessionStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+        // Ensure no stale persistent session remains
+        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      }
 
       setUser(userData);
       setIsAuthenticated(true);
@@ -78,6 +94,9 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(() => {
+    // Clear both storages to fully sign out
+    sessionStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.USER_DATA);
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     setUser(null);

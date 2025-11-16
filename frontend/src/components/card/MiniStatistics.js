@@ -19,7 +19,7 @@ export default function Default(props) {
   const textColorSecondary = "secondaryGray.600";
 
   return (
-    <Card py='15px'>
+    <Card py='18px'>
       <Flex
         my='auto'
         h='100%'
@@ -32,23 +32,23 @@ export default function Default(props) {
             lineHeight='100%'
             color={textColorSecondary}
             fontSize={{
-              base: "sm",
+              base: "md",
             }}>
             {name}
           </StatLabel>
           <StatNumber
             color={textColor}
             fontSize={{
-              base: "2xl",
+              base: "3xl",
             }}>
             {value}
           </StatNumber>
           {growth ? (
             <Flex align='center'>
-              <Text color='green.500' fontSize='xs' fontWeight='700' me='5px'>
+              <Text color='green.500' fontSize='sm' fontWeight='700' me='5px'>
                 {growth}
               </Text>
-              <Text color='secondaryGray.600' fontSize='xs' fontWeight='400'>
+              <Text color='secondaryGray.600' fontSize='sm' fontWeight='400'>
                 since last month
               </Text>
             </Flex>

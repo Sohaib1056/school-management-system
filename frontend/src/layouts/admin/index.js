@@ -5,8 +5,9 @@ import Footer from 'components/footer/FooterAdmin.js';
 import Navbar from 'components/navbar/NavbarAdmin.js';
 import Sidebar from 'components/sidebar/Sidebar.js';
 import { SidebarContext } from 'contexts/SidebarContext';
-import React, { useState, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { useState, Suspense, useMemo } from 'react';
+import ErrorBoundary from '../../components/ErrorBoundary';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import routes from 'routes.js';
 import testRoutes from '../../testRoutes';
 
@@ -93,33 +94,52 @@ export default function Dashboard(props) {
   const normalizePath = (p) => (p || '').replace(/^\//, '');
 
   const getRoutes = (routes) => {
-    return routes.flatMap((route, key) => {
-      if (route.layout === '/admin') {
-        return (
-          <Route path={`${normalizePath(route.path)}`} element={route.component} key={`route-${route.path}`} />
-        );
-      }
-      if (route.collapse && route.items) {
-        // Use flatMap to process all subitems and flatten the resulting array
-        return route.items.map((item, subKey) => {
-          if (item.layout === '/admin') {
-            return (
-              <Route 
-                path={`${normalizePath(item.path)}`} 
-                element={item.component} 
-                key={`subroute-${item.path}`} 
-              />
-            );
-          }
-          return null;
-        }).filter(Boolean); // Remove null entries
+    const ensureElement = (CompOrElement) => {
+      // If it's already a valid element (<Component />), return as-is
+      if (React.isValidElement(CompOrElement)) return CompOrElement;
+      // If it's a component type (including React.lazy), instantiate it
+      if (
+        typeof CompOrElement === 'function' ||
+        (typeof CompOrElement === 'object' && CompOrElement)
+      ) {
+        return React.createElement(CompOrElement);
       }
       return null;
-    }).filter(Boolean); // Remove null entries
+    };
+    return routes
+      .flatMap((route) => {
+        // Recurse into grouped routes first
+        if (route.collapse && route.items) {
+          return getRoutes(route.items);
+        }
+        if (route.category && route.items) {
+          return getRoutes(route.items);
+        }
+
+        // Create routes only for concrete entries with a path AND a component
+        if (route.layout === '/admin' && route.path && route.component) {
+          const elementNode = ensureElement(route.component);
+          if (!elementNode) return null;
+          return (
+            <Route
+              path={`${normalizePath(route.path)}`}
+              element={<ErrorBoundary>{elementNode}</ErrorBoundary>}
+              key={`route-${route.path}`}
+            />
+          );
+        }
+        return null;
+      })
+      .filter(Boolean);
   };
   document.documentElement.dir = 'ltr';
   const { onOpen } = useDisclosure();
   document.documentElement.dir = 'ltr';
+  // React to route changes to update Navbar titles without a full reload
+  const location = useLocation();
+  const brandText = useMemo(() => getActiveRoute(routes), [location.pathname]);
+  const secondary = useMemo(() => getActiveNavbar(routes), [location.pathname]);
+  const message = useMemo(() => getActiveNavbarText(routes), [location.pathname]);
   return (
     <Box>
       <Box>
@@ -149,9 +169,9 @@ export default function Dashboard(props) {
                 <Navbar
                   onOpen={onOpen}
                   logoText={'MindSpire SMS'}
-                  brandText={getActiveRoute(routes)}
-                  secondary={getActiveNavbar(routes)}
-                  message={getActiveNavbarText(routes)}
+                  brandText={brandText}
+                  secondary={secondary}
+                  message={message}
                   fixed={fixed}
                   {...rest}
                 />
