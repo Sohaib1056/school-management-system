@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 
 // chakra imports
 import {
@@ -14,6 +14,7 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import Content from "components/sidebar/components/Content";
+import { SidebarContext } from "contexts/SidebarContext";
 import {
   renderThumb,
   renderTrack,
@@ -26,7 +27,9 @@ import PropTypes from "prop-types";
 import { IoMenuOutline } from "react-icons/io5";
 
 function Sidebar(props) {
-  const { routes } = props;
+  const { routes, sidebarWidth } = props;
+
+  const { toggleSidebar } = useContext(SidebarContext) || {};
 
   let variantChange = "0.2s linear";
   let shadow = useColorModeValue(
@@ -43,7 +46,7 @@ function Sidebar(props) {
       <Box
         bg={sidebarBg}
         transition={variantChange}
-        w='300px'
+        w={`${sidebarWidth || 260}px`}
         h='100vh'
         m={sidebarMargins}
         minH='100%'

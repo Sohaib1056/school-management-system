@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 // chakra imports
 import { 
@@ -12,6 +12,7 @@ import {
   Collapse,
   VStack
 } from "@chakra-ui/react";
+import { SidebarContext } from "contexts/SidebarContext";
 import { MdKeyboardArrowDown, MdKeyboardArrowRight } from "react-icons/md";
 
 export function SidebarLinks(props) {
@@ -29,6 +30,8 @@ export function SidebarLinks(props) {
   let brandColor = useColorModeValue("brand.500", "brand.400");
 
   const { routes } = props;
+  const { toggleSidebar } = useContext(SidebarContext) || {};
+  const isCollapsed = !!toggleSidebar;
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
@@ -66,6 +69,7 @@ export function SidebarLinks(props) {
               bg: useColorModeValue("gray.100", "whiteAlpha.100"),
               borderRadius: "8px"
             }}
+            display={isCollapsed ? "none" : "flex"}
           >
             <Text
               fontSize="sm"
@@ -139,6 +143,7 @@ export function SidebarLinks(props) {
                     color={hasActive ? activeColor : textColor}
                     fontWeight={hasActive ? "bold" : "500"}
                     fontSize="md"
+                    display={isCollapsed ? "none" : "block"}
                   >
                     {route.name}
                   </Text>
@@ -185,6 +190,7 @@ export function SidebarLinks(props) {
               }}
               pt="18px"
               pb="12px"
+              display={isCollapsed ? "none" : "block"}
             >
               {route.name}
             </Text>
@@ -238,6 +244,7 @@ export function SidebarLinks(props) {
                           : "500"
                       }
                       fontSize="md"
+                      display={isCollapsed ? "none" : "block"}
                     >
                       {route.name}
                     </Text>
@@ -276,6 +283,7 @@ export function SidebarLinks(props) {
                       activeRoute(route.path.toLowerCase()) ? "bold" : "500"
                     }
                     fontSize="md"
+                    display={isCollapsed ? "none" : "block"}
                   >
                     {route.name}
                   </Text>

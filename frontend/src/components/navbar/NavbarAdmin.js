@@ -1,11 +1,14 @@
 // Chakra Imports
 import { Box, Flex, Link, Text, useColorModeValue } from '@chakra-ui/react';
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { SidebarContext } from 'contexts/SidebarContext';
 import AdminNavbarLinks from 'components/navbar/NavbarLinksAdmin';
 
 export default function AdminNavbar(props) {
 	const [ scrolled, setScrolled ] = useState(false);
+	const { toggleSidebar } = useContext(SidebarContext) || {};
+	const sidebarWidth = toggleSidebar ? 80 : 260;
 
 	useEffect(() => {
 		window.addEventListener('scroll', changeNavbar);
@@ -72,12 +75,13 @@ export default function AdminNavbar(props) {
 			}}
 			pt='8px'
 			top={{ base: '12px', md: '16px', lg: '20px', xl: '20px' }}
+			left={{ base: '12px', md: '30px', lg: '30px', xl: `${sidebarWidth + 20}px` }}
 			w={{
 				base: 'calc(100vw - 6%)',
 				md: 'calc(100vw - 8%)',
 				lg: 'calc(100vw - 6%)',
-				xl: 'calc(100vw - 350px)',
-				'2xl': 'calc(100vw - 365px)'
+				xl: 'auto',
+				'2xl': 'auto'
 			}}>
 			<Flex
 				w='100%'
