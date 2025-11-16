@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
-import { MdAlarm, MdSchedule, MdSend, MdSearch } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdAlarm, MdSchedule, MdSend, MdSearch, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -13,6 +13,11 @@ const mockReminders = [
 export default function Reminders() {
   const [search, setSearch] = useState('');
   const [channel, setChannel] = useState('all');
+  const [rows, setRows] = useState(mockReminders);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', type: '', audience: '', count: 0, schedule: '', channel: 'SMS' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const stats = useMemo(() => ({ active: 2, paused: 0, sentToday: 260 }), []);
@@ -26,7 +31,11 @@ export default function Reminders() {
           <Heading as="h3" size="lg" mb={1}>Reminders</Heading>
           <Text color={textColorSecondary}>Automated SMS/Email reminders</Text>
         </Box>
-        <Button leftIcon={<MdSend />} colorScheme='blue'>Create Reminder</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdSend />} colorScheme='blue'>Create Reminder</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5} mb={5}>
@@ -73,12 +82,73 @@ export default function Reminders() {
                   <Td isNumeric>{r.count}</Td>
                   <Td><Text color={textColorSecondary}>{r.schedule}</Text></Td>
                   <Td><Badge colorScheme='blue'>{r.channel}</Badge></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(r); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(r); setForm({ ...r }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Reminder Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selected && (
+              <Box>
+                <Text><strong>ID:</strong> {selected.id}</Text>
+                <Text><strong>Type:</strong> {selected.type}</Text>
+                <Text><strong>Audience:</strong> {selected.audience}</Text>
+                <Text><strong>Count:</strong> {selected.count}</Text>
+                <Text><strong>Schedule:</strong> {selected.schedule}</Text>
+                <Text><strong>Channel:</strong> {selected.channel}</Text>
+              </Box>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Reminder</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Type</FormLabel>
+              <Input value={form.type} onChange={(e)=> setForm(f=>({ ...f, type: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Audience</FormLabel>
+              <Input value={form.audience} onChange={(e)=> setForm(f=>({ ...f, audience: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Count</FormLabel>
+              <NumberInput value={form.count} min={0} onChange={(v)=> setForm(f=>({ ...f, count: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Schedule</FormLabel>
+              <Input value={form.schedule} onChange={(e)=> setForm(f=>({ ...f, schedule: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Channel</FormLabel>
+              <Select value={form.channel.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, channel: e.target.value==='sms'?'SMS':'Email' }))}>
+                <option value='sms'>SMS</option>
+                <option value='email'>Email</option>
+              </Select>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(x => x.id===form.id ? { ...form } : x)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

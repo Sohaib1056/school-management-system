@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Heading,
   Text,
   HStack,
   Button,
+  ButtonGroup,
   Badge,
   Select,
   Input,
@@ -19,12 +21,23 @@ import {
   Td,
   Flex,
   useColorModeValue,
+  IconButton,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import Card from 'components/card/Card.js';
 import MiniStatistics from 'components/card/MiniStatistics';
 import IconBox from 'components/icons/IconBox';
-import { MdClass, MdPeople, MdTrendingUp, MdSchool, MdSearch, MdAssignment } from 'react-icons/md';
+import { MdClass, MdPeople, MdTrendingUp, MdSchool, MdSearch, MdAssignment, MdFileDownload, MdPictureAsPdf, MdRefresh, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 
 const mockClasses = [
   { id: 1, name: 'Class 1', section: 'A', strength: 28, classTeacher: 'Ali Khan' },
@@ -40,11 +53,17 @@ const mockClasses = [
 export default function Classes() {
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
+  const [rows, setRows] = useState(mockClasses);
+  const [selected, setSelected] = useState(null);
+  const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
+  const [form, setForm] = useState({ classTeacher: '', strength: 0 });
+  const navigate = useNavigate();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const classes = useMemo(() => {
-    const base = filter === 'All' ? mockClasses : mockClasses.filter((c) => c.name === filter);
+    const base = filter === 'All' ? rows : rows.filter((c) => c.name === filter);
     const term = search.trim().toLowerCase();
     if (!term) return base;
     return base.filter(
@@ -53,16 +72,16 @@ export default function Classes() {
         c.section.toLowerCase().includes(term) ||
         c.classTeacher.toLowerCase().includes(term)
     );
-  }, [filter, search]);
+  }, [rows, filter, search]);
 
   const classNames = useMemo(
     () => ['All', ...Array.from(new Set(mockClasses.map((c) => c.name)))],
     []
   );
 
-  const totalClasses = useMemo(() => new Set(mockClasses.map((c) => c.name)).size, []);
-  const totalSections = mockClasses.length;
-  const totalStudents = mockClasses.reduce((a, b) => a + b.strength, 0);
+  const totalClasses = useMemo(() => new Set(rows.map((c) => c.name)).size, [rows]);
+  const totalSections = rows.length;
+  const totalStudents = rows.reduce((a, b) => a + b.strength, 0);
   const avgStrength = Math.round(totalStudents / totalSections);
 
   return (
@@ -72,6 +91,11 @@ export default function Classes() {
           <Heading as="h3" size="lg" mb={1} color={textColor}>Classes</Heading>
           <Text color={textColorSecondary}>Manage classes, sections and class teachers</Text>
         </Box>
+        <ButtonGroup>
+          <Button leftIcon={<MdRefresh />} variant='outline' onClick={()=>window.location.reload()}>Refresh</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap="20px" mb={5}>
@@ -132,6 +156,7 @@ export default function Classes() {
                 <Th>Strength</Th>
                 <Th>Class Teacher</Th>
                 <Th>Status</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -146,12 +171,74 @@ export default function Classes() {
                       {c.strength >= 30 ? 'Full' : 'Open'}
                     </Badge>
                   </Td>
+                  <Td>
+                    <HStack spacing={1}>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(c); onViewOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(c); setForm({ classTeacher: c.classTeacher, strength: c.strength }); onEditOpen(); }} />
+                    </HStack>
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={isViewOpen} onClose={onViewClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Class Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+                  <Box><Text fontWeight='600'>Class</Text><Text>{selected.name}</Text></Box>
+                  <Box><Text fontWeight='600'>Section</Text><Text>{selected.section}</Text></Box>
+                  <Box><Text fontWeight='600'>Strength</Text><Text>{selected.strength}</Text></Box>
+                  <Box><Text fontWeight='600'>Class Teacher</Text><Text>{selected.classTeacher}</Text></Box>
+                  <Box><Text fontWeight='600'>Status</Text><Badge ml={2} colorScheme={selected.strength >= 30 ? 'orange' : 'green'}>{selected.strength >= 30 ? 'Full' : 'Open'}</Badge></Box>
+                </SimpleGrid>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={onViewClose}>Close</Button>
+            <Button colorScheme='blue' variant='outline' onClick={()=>{ onViewClose(); if(selected) { setForm({ classTeacher: selected.classTeacher, strength: selected.strength }); onEditOpen(); }}}>Edit</Button>
+            <Button colorScheme='blue' ml={2} onClick={()=>navigate('/admin/students/list')}>Open Students</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isEditOpen} onClose={onEditClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Class</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <FormControl mb={3}>
+                  <FormLabel>Class Teacher</FormLabel>
+                  <Input value={form.classTeacher} onChange={(e)=>setForm((f)=>({ ...f, classTeacher: e.target.value }))} />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Strength</FormLabel>
+                  <Input type='number' value={form.strength} onChange={(e)=>setForm((f)=>({ ...f, strength: Number(e.target.value)||0 }))} />
+                </FormControl>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={onEditClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              if (!selected) { onEditClose(); return; }
+              setRows((rs)=> rs.map((r)=> (r.name===selected.name && r.section===selected.section ? { ...r, classTeacher: form.classTeacher, strength: form.strength } : r)));
+              onEditClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
+  ButtonGroup,
   Flex,
   SimpleGrid,
   Text,
   Badge,
   Icon,
+  IconButton,
   Table,
   Thead,
   Tbody,
@@ -18,6 +20,17 @@ import {
   InputGroup,
   InputLeftElement,
   Select,
+  HStack,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 // Custom components
 import Card from '../../../../components/card/Card';
@@ -32,6 +45,10 @@ import {
   MdSearch,
   MdFilterList,
   MdRefresh,
+  MdFileDownload,
+  MdPictureAsPdf,
+  MdRemoveRedEye,
+  MdEdit,
 } from 'react-icons/md';
 // Mock data
 import { mockAttendanceLogs, mockStats } from '../../../../utils/mockData';
@@ -42,6 +59,11 @@ export default function AttendanceMonitor() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isLive, setIsLive] = useState(true);
+  const [logs, setLogs] = useState(mockAttendanceLogs);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [editForm, setEditForm] = useState({ status: 'boarding', location: '' });
 
   // Calculate attendance stats
   const todayPresent = Math.floor(mockStats.totalStudents * (mockStats.todayAttendance / 100));
@@ -49,7 +71,7 @@ export default function AttendanceMonitor() {
   const todayLate = Math.floor(mockStats.totalStudents * 0.02); // 2% late
 
   // Filter attendance logs
-  const filteredLogs = mockAttendanceLogs.filter(log => {
+  const filteredLogs = logs.filter(log => {
     const matchesSearch = log.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           log.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           log.rfidTag.toLowerCase().includes(searchQuery.toLowerCase());
@@ -71,14 +93,11 @@ export default function AttendanceMonitor() {
             Real-time RFID attendance tracking system
           </Text>
         </Box>
-        <Button
-          leftIcon={<MdRefresh />}
-          colorScheme='blue'
-          variant='outline'
-          onClick={() => window.location.reload()}
-        >
-          Refresh
-        </Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdRefresh />} colorScheme='blue' variant='outline' onClick={() => window.location.reload()}>Refresh</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       {/* Stats Row */}
@@ -221,6 +240,7 @@ export default function AttendanceMonitor() {
                 <Th>BUS #</Th>
                 <Th>STATUS</Th>
                 <Th>LOCATION</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -257,6 +277,12 @@ export default function AttendanceMonitor() {
                       {log.location}
                     </Text>
                   </Td>
+                  <Td>
+                    <HStack spacing={1}>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelectedLog(log); viewDisc.onOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelectedLog(log); setEditForm({ status: log.status.toLowerCase(), location: log.location }); editDisc.onOpen(); }} />
+                    </HStack>
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
@@ -269,6 +295,64 @@ export default function AttendanceMonitor() {
           </Flex>
         )}
       </Card>
+
+      {/* View Modal */}
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Check-in Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedLog && (
+              <Box>
+                <HStack justify='space-between' mb={2}><Text fontWeight='600'>Student</Text><Text>{selectedLog.studentName}</Text></HStack>
+                <HStack justify='space-between' mb={2}><Text fontWeight='600'>Student ID</Text><Text>{selectedLog.studentId}</Text></HStack>
+                <HStack justify='space-between' mb={2}><Text fontWeight='600'>RFID</Text><Text>{selectedLog.rfidTag}</Text></HStack>
+                <HStack justify='space-between' mb={2}><Text fontWeight='600'>Bus</Text><Text>{selectedLog.busNumber}</Text></HStack>
+                <HStack justify='space-between' mb={2}><Text fontWeight='600'>Time</Text><Text>{selectedLog.timestamp}</Text></HStack>
+                <HStack justify='space-between'><Text fontWeight='600'>Status</Text><Badge colorScheme={getStatusColor(selectedLog.status)}>{selectedLog.status}</Badge></HStack>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Check-in</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selectedLog && (
+              <Box>
+                <FormControl mb={3}>
+                  <FormLabel>Status</FormLabel>
+                  <Select value={editForm.status} onChange={(e)=> setEditForm(f=>({ ...f, status: e.target.value }))}>
+                    <option value='boarding'>boarding</option>
+                    <option value='alighting'>alighting</option>
+                  </Select>
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Location</FormLabel>
+                  <Input value={editForm.location} onChange={(e)=> setEditForm(f=>({ ...f, location: e.target.value }))} />
+                </FormControl>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              if(!selectedLog) return;
+              setLogs(prev => prev.map(l => l.id===selectedLog.id ? { ...l, status: editForm.status, location: editForm.location } : l));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

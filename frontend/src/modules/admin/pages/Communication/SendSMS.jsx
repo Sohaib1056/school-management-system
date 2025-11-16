@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Textarea, Input, InputGroup, InputLeftElement, Switch, FormControl, FormLabel, HStack } from '@chakra-ui/react';
-import { MdSms, MdSend, MdSchedule, MdPeople, MdCheckCircle, MdBarChart } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Textarea, Input, InputGroup, InputLeftElement, Switch, FormControl, FormLabel, HStack, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdSms, MdSend, MdSchedule, MdPeople, MdCheckCircle, MdBarChart, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -18,6 +18,11 @@ export default function SendSMS() {
   const [message, setMessage] = useState('');
   const [schedule, setSchedule] = useState(false);
   const [scheduleAt, setScheduleAt] = useState('');
+  const [rows, setRows] = useState(mockLogs);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', audience: '', sent: 0, delivered: 0, time: '', status: 'Sent' });
 
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
@@ -32,7 +37,11 @@ export default function SendSMS() {
           <Heading as="h3" size="lg" mb={1}>Send SMS</Heading>
           <Text color={textColorSecondary}>Broadcast SMS to parents, students or custom audience</Text>
         </Box>
-        <Button leftIcon={<MdSend />} colorScheme='blue'>Send Now</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdSend />} colorScheme='blue'>Send Now</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={5} mb={5}>
@@ -104,10 +113,11 @@ export default function SendSMS() {
                 <Th isNumeric>Delivered</Th>
                 <Th>Time</Th>
                 <Th>Status</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockLogs.map((l) => (
+              {rows.map((l) => (
                 <Tr key={l.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
                   <Td><Text fontWeight='600'>{l.id}</Text></Td>
                   <Td>{l.audience}</Td>
@@ -115,12 +125,73 @@ export default function SendSMS() {
                   <Td isNumeric>{l.delivered}</Td>
                   <Td><Text color={textColorSecondary}>{l.time}</Text></Td>
                   <Td><Badge colorScheme={l.status === 'Sent' ? 'green' : 'yellow'}>{l.status}</Badge></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(l); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(l); setForm({ ...l }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>SMS Log</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selected && (
+              <Box>
+                <Text><strong>ID:</strong> {selected.id}</Text>
+                <Text><strong>Audience:</strong> {selected.audience}</Text>
+                <Text><strong>Sent:</strong> {selected.sent}</Text>
+                <Text><strong>Delivered:</strong> {selected.delivered}</Text>
+                <Text><strong>Time:</strong> {selected.time}</Text>
+                <Text><strong>Status:</strong> {selected.status}</Text>
+              </Box>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit SMS Log</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Audience</FormLabel>
+              <Input value={form.audience} onChange={(e)=> setForm(f=>({ ...f, audience: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Sent</FormLabel>
+              <NumberInput value={form.sent} min={0} onChange={(v)=> setForm(f=>({ ...f, sent: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Delivered</FormLabel>
+              <NumberInput value={form.delivered} min={0} onChange={(v)=> setForm(f=>({ ...f, delivered: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Time</FormLabel>
+              <Input value={form.time} onChange={(e)=> setForm(f=>({ ...f, time: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Status</FormLabel>
+              <Select value={form.status.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, status: e.target.value==='sent'?'Sent':'Queued' }))}>
+                <option value='sent'>Sent</option>
+                <option value='queued'>Queued</option>
+              </Select>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(r => r.id===form.id ? { ...r, audience: form.audience, sent: form.sent, delivered: form.delivered, time: form.time, status: form.status } : r)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

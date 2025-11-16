@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, CheckboxGroup, Checkbox, Stack } from '@chakra-ui/react';
-import { MdAssessment, MdFileDownload, MdPictureAsPdf, MdTableChart } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, CheckboxGroup, Checkbox, Stack, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@chakra-ui/react';
+import { MdAssessment, MdFileDownload, MdPictureAsPdf, MdTableChart, MdRemoveRedEye } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -15,6 +15,8 @@ export default function CustomReports() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [fields, setFields] = useState(['name','amount']);
+  const [selected, setSelected] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const stats = useMemo(() => ({ saved: 12, lastRun: 'Today 10:30 AM', templates: 6 }), []);
@@ -90,6 +92,7 @@ export default function CustomReports() {
                 <Th>Type</Th>
                 <Th isNumeric>Records</Th>
                 <Th>Created</Th>
+                <Th>Action</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -100,12 +103,37 @@ export default function CustomReports() {
                   <Td><Badge colorScheme='blue'>{r.type}</Badge></Td>
                   <Td isNumeric>{r.records}</Td>
                   <Td><Text color={textColorSecondary}>{r.created}</Text></Td>
+                  <Td>
+                    <Button size='sm' leftIcon={<MdRemoveRedEye />} variant='outline' onClick={() => { setSelected(r); onOpen(); }}>View</Button>
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={isOpen} onClose={onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Report Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selected && (
+              <Box>
+                <Text><strong>ID:</strong> {selected.id}</Text>
+                <Text><strong>Title:</strong> {selected.title}</Text>
+                <Text><strong>Type:</strong> {selected.type}</Text>
+                <Text><strong>Records:</strong> {selected.records}</Text>
+                <Text><strong>Created:</strong> {selected.created}</Text>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

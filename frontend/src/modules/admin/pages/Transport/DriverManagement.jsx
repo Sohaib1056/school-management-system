@@ -8,6 +8,7 @@ import {
   Badge,
   Icon,
   Button,
+  ButtonGroup,
   useColorModeValue,
   Select,
   Input,
@@ -20,8 +21,25 @@ import {
   Th,
   Td,
   Avatar,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  FormControl,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
 } from '@chakra-ui/react';
-import { MdPerson, MdSearch, MdAdd, MdThumbUp } from 'react-icons/md';
+import { MdPerson, MdSearch, MdAdd, MdThumbUp, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdMoreVert, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -35,23 +53,28 @@ const mockDrivers = [
 export default function DriverManagement() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [rows, setRows] = useState(mockDrivers);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', name: '', phone: '', license: '', status: 'On Duty', bus: '', rating: 0 });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const filtered = useMemo(() => {
-    return mockDrivers.filter((d) => {
+    return rows.filter((d) => {
       const matchesSearch = !search || d.name.toLowerCase().includes(search.toLowerCase()) || d.id.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = status === 'all' || d.status.toLowerCase() === status;
       return matchesSearch && matchesStatus;
     });
-  }, [search, status]);
+  }, [rows, search, status]);
 
   const stats = useMemo(() => {
-    const total = mockDrivers.length;
-    const onDuty = mockDrivers.filter((d) => d.status === 'On Duty').length;
-    const offDuty = mockDrivers.filter((d) => d.status === 'Off Duty').length;
-    const avgRating = (mockDrivers.reduce((s, d) => s + d.rating, 0) / total).toFixed(1);
+    const total = rows.length;
+    const onDuty = rows.filter((d) => d.status === 'On Duty').length;
+    const offDuty = rows.filter((d) => d.status === 'Off Duty').length;
+    const avgRating = (rows.reduce((s, d) => s + d.rating, 0) / (total || 1)).toFixed(1);
     return { total, onDuty, offDuty, avgRating };
-  }, []);
+  }, [rows]);
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
@@ -60,7 +83,11 @@ export default function DriverManagement() {
           <Heading as="h3" size="lg" mb={1}>Driver Management</Heading>
           <Text color={textColorSecondary}>Manage drivers, duty status, and licenses</Text>
         </Box>
-        <Button leftIcon={<MdAdd />} colorScheme="blue">Add Driver</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdAdd />} colorScheme="blue">Add Driver</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={5} mb={5}>
@@ -98,6 +125,7 @@ export default function DriverManagement() {
                 <Th>Status</Th>
                 <Th>Assigned Bus</Th>
                 <Th isNumeric>Rating</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -110,12 +138,94 @@ export default function DriverManagement() {
                   <Td><Badge colorScheme={d.status === 'On Duty' ? 'green' : 'gray'}>{d.status}</Badge></Td>
                   <Td>{d.bus}</Td>
                   <Td isNumeric>{d.rating.toFixed(1)}</Td>
+                  <Td>
+                    <Flex align='center' gap={1}>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(d); viewDisc.onOpen(); }} />
+                      <Menu>
+                        <MenuButton as={IconButton} aria-label='More' icon={<MdMoreVert />} size='sm' variant='ghost' />
+                        <MenuList>
+                          <MenuItem onClick={()=>{ setSelected(d); viewDisc.onOpen(); }}>View Details</MenuItem>
+                          <MenuItem onClick={()=>{ setSelected(d); setForm({ ...d }); editDisc.onOpen(); }}>Edit</MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </Flex>
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Driver Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Name</Text><Text>{selected.name}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>ID</Text><Text>{selected.id}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Phone</Text><Text>{selected.phone}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>License</Text><Text>{selected.license}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Status</Text><Badge colorScheme={selected.status==='On Duty'?'green':'gray'}>{selected.status}</Badge></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Assigned Bus</Text><Text>{selected.bus}</Text></Flex>
+                <Flex justify='space-between'><Text fontWeight='600'>Rating</Text><Text>{selected.rating.toFixed(1)}</Text></Flex>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Driver</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Name</FormLabel>
+              <Input value={form.name} onChange={(e)=> setForm(f=>({ ...f, name: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Phone</FormLabel>
+              <Input value={form.phone} onChange={(e)=> setForm(f=>({ ...f, phone: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>License</FormLabel>
+              <Input value={form.license} onChange={(e)=> setForm(f=>({ ...f, license: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Status</FormLabel>
+              <Select value={form.status.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, status: e.target.value==='on duty'?'On Duty':'Off Duty' }))}>
+                <option value='on duty'>On Duty</option>
+                <option value='off duty'>Off Duty</option>
+              </Select>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Assigned Bus</FormLabel>
+              <Input value={form.bus} onChange={(e)=> setForm(f=>({ ...f, bus: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Rating</FormLabel>
+              <NumberInput min={0} max={5} step={0.1} value={form.rating} onChange={(v)=> setForm(f=>({ ...f, rating: Number(v)||0 }))}>
+                <NumberInputField />
+              </NumberInput>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => prev.map(r => r.id===form.id ? { ...form } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

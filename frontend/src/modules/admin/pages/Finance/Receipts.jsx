@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, InputGroup, Input, InputLeftElement, Select, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react';
-import { MdReceiptLong, MdFileDownload, MdSearch } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, InputGroup, Input, InputLeftElement, Select, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdReceiptLong, MdFileDownload, MdSearch, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -16,18 +16,21 @@ export default function Receipts() {
   const [method, setMethod] = useState('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [rows, setRows] = useState(mockReceipts);
   const [selected, setSelected] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', invoice: '', student: '', amount: 0, method: 'Cash', date: '', txnId: '', receivedBy: '', status: 'Success' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const totals = useMemo(() => {
-    const total = mockReceipts.length;
-    const amount = mockReceipts.reduce((s, r) => s + r.amount, 0);
+    const total = rows.length;
+    const amount = rows.reduce((s, r) => s + r.amount, 0);
     return { total, amount };
-  }, []);
+  }, [rows]);
 
   const filtered = useMemo(() => {
-    return mockReceipts.filter(r => {
+    return rows.filter(r => {
       const matchesSearch = !search || r.student.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase()) || r.invoice.toLowerCase().includes(search.toLowerCase());
       const matchesMethod = method === 'all' || r.method.toLowerCase() === method;
       const d = new Date(r.date);
@@ -35,7 +38,7 @@ export default function Receipts() {
       const beforeTo = !to || d <= new Date(to);
       return matchesSearch && matchesMethod && afterFrom && beforeTo;
     });
-  }, [search, method, from, to]);
+  }, [rows, search, method, from, to]);
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
@@ -44,7 +47,10 @@ export default function Receipts() {
           <Heading as="h3" size="lg" mb={1}>Receipts</Heading>
           <Text color={textColorSecondary}>Download and manage receipts</Text>
         </Box>
-        <Button leftIcon={<MdFileDownload />} colorScheme='blue'>Export</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={5} mb={5}>
@@ -85,8 +91,7 @@ export default function Receipts() {
                 <Th>Txn ID</Th>
                 <Th>Received By</Th>
                 <Th>Status</Th>
-                <Th>Download</Th>
-                <Th>View</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -102,10 +107,11 @@ export default function Receipts() {
                   <Td>{r.receivedBy}</Td>
                   <Td><Badge colorScheme='green'>{r.status}</Badge></Td>
                   <Td>
-                    <Button size='sm' leftIcon={<MdFileDownload />}>PDF</Button>
-                  </Td>
-                  <Td>
-                    <Button size='sm' variant='outline' onClick={() => { setSelected(r); onOpen(); }}>Details</Button>
+                    <Flex gap={1}>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(r); viewDisc.onOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(r); setForm({ ...r }); editDisc.onOpen(); }} />
+                      <Button size='sm' leftIcon={<MdFileDownload />}>PDF</Button>
+                    </Flex>
                   </Td>
                 </Tr>
               ))}
@@ -115,7 +121,7 @@ export default function Receipts() {
       </Card>
 
       {/* Detail Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size='md'>
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Receipt Details</ModalHeader>
@@ -135,6 +141,45 @@ export default function Receipts() {
               </Box>
             )}
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Receipt</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={2}>
+            <FormControl mb={3}>
+              <FormLabel>Amount</FormLabel>
+              <NumberInput value={form.amount} min={0} onChange={(v)=> setForm(f=>({ ...f, amount: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Method</FormLabel>
+              <Select value={form.method.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, method: e.target.value.charAt(0).toUpperCase()+e.target.value.slice(1) }))}>
+                <option value='cash'>Cash</option>
+                <option value='bank'>Bank</option>
+                <option value='card'>Card</option>
+              </Select>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Date</FormLabel>
+              <Input type='date' value={form.date} onChange={(e)=> setForm(f=>({ ...f, date: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Txn ID</FormLabel>
+              <Input value={form.txnId} onChange={(e)=> setForm(f=>({ ...f, txnId: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Received By</FormLabel>
+              <Input value={form.receivedBy} onChange={(e)=> setForm(f=>({ ...f, receivedBy: e.target.value }))} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(r => r.id===form.id ? { ...r, amount: form.amount, method: form.method, date: form.date, txnId: form.txnId, receivedBy: form.receivedBy } : r)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </Box>

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react';
-import { MdReceipt, MdPending, MdDoneAll, MdAdd, MdSearch, MdSend } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, IconButton } from '@chakra-ui/react';
+import { MdReceipt, MdPending, MdDoneAll, MdAdd, MdSearch, MdSend, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -18,12 +18,15 @@ export default function Invoices() {
   const [to, setTo] = useState('');
   const [minAmt, setMinAmt] = useState('');
   const [maxAmt, setMaxAmt] = useState('');
+  const [rows, setRows] = useState(mockInvoices);
   const [selected, setSelected] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', status: 'Paid', due: '' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const filtered = useMemo(() => {
-    return mockInvoices.filter((i) => {
+    return rows.filter((i) => {
       const matchesStatus = status === 'all' || i.status.toLowerCase() === status;
       const matchesSearch = !search || i.student.toLowerCase().includes(search.toLowerCase()) || i.id.toLowerCase().includes(search.toLowerCase());
       const d = new Date(i.due);
@@ -32,7 +35,7 @@ export default function Invoices() {
       const amtOk = (!minAmt || i.amount >= Number(minAmt)) && (!maxAmt || i.amount <= Number(maxAmt));
       return matchesStatus && matchesSearch && afterFrom && beforeTo && amtOk;
     });
-  }, [status, search, from, to, minAmt, maxAmt]);
+  }, [rows, status, search, from, to, minAmt, maxAmt]);
 
   const stats = useMemo(() => {
     const total = mockInvoices.length;
@@ -48,7 +51,11 @@ export default function Invoices() {
           <Heading as="h3" size="lg" mb={1}>Invoices</Heading>
           <Text color={textColorSecondary}>Generate and manage fee invoices</Text>
         </Box>
-        <Button leftIcon={<MdAdd />} colorScheme='blue'>Create Invoice</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdAdd />} colorScheme='blue'>Create Invoice</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5} mb={5}>
@@ -91,7 +98,7 @@ export default function Invoices() {
                 <Th>Status</Th>
                 <Th>Due Date</Th>
                 <Th isNumeric>Age (days)</Th>
-                <Th>Action</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -106,10 +113,12 @@ export default function Invoices() {
                   <Td><Text color={textColorSecondary}>{i.due}</Text></Td>
                   <Td isNumeric>{Math.max(0, Math.round((new Date() - new Date(i.due)) / (1000*60*60*24)))}</Td>
                   <Td>
-                    <Flex gap={2}>
-                      <Button size='sm' leftIcon={<MdSend />} onClick={() => setSelected(i) || onOpen()}>Reminder</Button>
+                    <Flex gap={1}>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(i); viewDisc.onOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(i); setForm({ id: i.id, status: i.status, due: i.due }); editDisc.onOpen(); }} />
+                      <Button size='sm' leftIcon={<MdSend />} onClick={()=>{ setSelected(i); viewDisc.onOpen(); }}>Reminder</Button>
                       {i.status !== 'Paid' && (
-                        <Button size='sm' variant='outline'>Mark Paid</Button>
+                        <Button size='sm' variant='outline' onClick={()=> setRows(prev => prev.map(r => r.id===i.id ? { ...r, status: 'Paid', balance: 0 } : r))}>Mark Paid</Button>
                       )}
                     </Flex>
                   </Td>
@@ -120,7 +129,7 @@ export default function Invoices() {
         </Box>
       </Card>
 
-      <Modal isOpen={isOpen} onClose={onClose} size='md'>
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Invoice Details</ModalHeader>
@@ -138,6 +147,29 @@ export default function Invoices() {
               </Box>
             )}
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Invoice</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Select mb={3} value={form.status.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, status: e.target.value==='paid'?'Paid':e.target.value==='pending'?'Pending':'Overdue' }))}>
+              <option value='paid'>Paid</option>
+              <option value='pending'>Pending</option>
+              <option value='overdue'>Overdue</option>
+            </Select>
+            <Input type='date' value={form.due} onChange={(e)=> setForm(f=>({ ...f, due: e.target.value }))} />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => prev.map(r => r.id===form.id ? { ...r, status: form.status, due: form.due } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </Box>

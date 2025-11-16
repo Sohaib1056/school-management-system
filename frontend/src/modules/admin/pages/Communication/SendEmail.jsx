@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, Textarea, FormControl, FormLabel, HStack, Switch } from '@chakra-ui/react';
-import { MdEmail, MdSend, MdAttachment, MdCheckCircle, MdReport } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, Textarea, FormControl, FormLabel, HStack, Switch, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdEmail, MdSend, MdAttachment, MdCheckCircle, MdReport, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -15,6 +15,11 @@ export default function SendEmail() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [track, setTrack] = useState(true);
+  const [rows, setRows] = useState(mockEmails);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', subject: '', audience: '', sent: 0, opened: 0, bounces: 0, time: '' });
 
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
@@ -27,7 +32,11 @@ export default function SendEmail() {
           <Heading as="h3" size="lg" mb={1}>Send Email</Heading>
           <Text color={textColorSecondary}>Compose and send emails with tracking</Text>
         </Box>
-        <Button leftIcon={<MdSend />} colorScheme='blue'>Send</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdSend />} colorScheme='blue'>Send</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={5} mb={5}>
@@ -82,10 +91,11 @@ export default function SendEmail() {
                 <Th isNumeric>Opened</Th>
                 <Th isNumeric>Bounces</Th>
                 <Th>Time</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockEmails.map((e) => (
+              {rows.map((e) => (
                 <Tr key={e.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
                   <Td><Text fontWeight='600'>{e.id}</Text></Td>
                   <Td>{e.subject}</Td>
@@ -94,12 +104,75 @@ export default function SendEmail() {
                   <Td isNumeric>{e.opened}</Td>
                   <Td isNumeric>{e.bounces}</Td>
                   <Td><Text color={textColorSecondary}>{e.time}</Text></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(e); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(e); setForm({ ...e }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Email Log</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selected && (
+              <Box>
+                <Text><strong>ID:</strong> {selected.id}</Text>
+                <Text><strong>Subject:</strong> {selected.subject}</Text>
+                <Text><strong>Audience:</strong> {selected.audience}</Text>
+                <Text><strong>Sent:</strong> {selected.sent}</Text>
+                <Text><strong>Opened:</strong> {selected.opened}</Text>
+                <Text><strong>Bounces:</strong> {selected.bounces}</Text>
+                <Text><strong>Time:</strong> {selected.time}</Text>
+              </Box>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Email Log</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Subject</FormLabel>
+              <Input value={form.subject} onChange={(e)=> setForm(f=>({ ...f, subject: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Audience</FormLabel>
+              <Input value={form.audience} onChange={(e)=> setForm(f=>({ ...f, audience: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Sent</FormLabel>
+              <NumberInput value={form.sent} min={0} onChange={(v)=> setForm(f=>({ ...f, sent: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Opened</FormLabel>
+              <NumberInput value={form.opened} min={0} onChange={(v)=> setForm(f=>({ ...f, opened: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Bounces</FormLabel>
+              <NumberInput value={form.bounces} min={0} onChange={(v)=> setForm(f=>({ ...f, bounces: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Time</FormLabel>
+              <Input value={form.time} onChange={(e)=> setForm(f=>({ ...f, time: e.target.value }))} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(r => r.id===form.id ? { ...form } : r)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

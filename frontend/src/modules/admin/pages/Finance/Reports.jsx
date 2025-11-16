@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, Progress } from '@chakra-ui/react';
-import { MdAssessment, MdArrowDownward, MdArrowUpward, MdFileDownload } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, Progress, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdAssessment, MdArrowDownward, MdArrowUpward, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -14,6 +14,11 @@ const mockClass = [
 
 export default function Reports() {
   const [range, setRange] = useState('this-month');
+  const [rows, setRows] = useState(mockClass);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [active, setActive] = useState(null);
+  const [form, setForm] = useState({ class: '', billed: 0, collected: 0 });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const summary = useMemo(() => mockSummary, []);
@@ -25,7 +30,10 @@ export default function Reports() {
           <Heading as="h3" size="lg" mb={1}>Finance Reports</Heading>
           <Text color={textColorSecondary}>Revenue and collections by class</Text>
         </Box>
-        <Button leftIcon={<MdFileDownload />} colorScheme='blue'>Download PDF</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Download PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={5} mb={5}>
@@ -56,10 +64,11 @@ export default function Reports() {
                 <Th isNumeric>Billed</Th>
                 <Th isNumeric>Collected</Th>
                 <Th isNumeric>Rate</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockClass.map((r) => {
+              {rows.map((r) => {
                 const rate = Math.round((r.collected / r.billed) * 100);
                 return (
                   <Tr key={r.class} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
@@ -74,6 +83,10 @@ export default function Reports() {
                         </Box>
                       </Flex>
                     </Td>
+                    <Td>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setActive(r); viewDisc.onOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setForm({ ...r }); editDisc.onOpen(); }} />
+                    </Td>
                   </Tr>
                 );
               })}
@@ -81,6 +94,56 @@ export default function Reports() {
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Class Collection Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {active && (
+              <Box>
+                <Text><strong>Class:</strong> {active.class}</Text>
+                <Text><strong>Billed:</strong> Rs. {active.billed.toLocaleString()}</Text>
+                <Text><strong>Collected:</strong> Rs. {active.collected.toLocaleString()}</Text>
+                <Text><strong>Rate:</strong> {Math.round((active.collected/active.billed)*100)}%</Text>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Class Totals</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Class</FormLabel>
+              <Input value={form.class} onChange={(e)=> setForm(f=>({ ...f, class: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Billed</FormLabel>
+              <NumberInput value={form.billed} min={0} onChange={(v)=> setForm(f=>({ ...f, billed: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Collected</FormLabel>
+              <NumberInput value={form.collected} min={0} onChange={(v)=> setForm(f=>({ ...f, collected: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => prev.map(r => r.class===form.class ? { ...form } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

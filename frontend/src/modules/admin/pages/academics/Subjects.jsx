@@ -5,6 +5,7 @@ import {
   Text,
   HStack,
   Button,
+  ButtonGroup,
   Select,
   Badge,
   Input,
@@ -18,13 +19,22 @@ import {
   Th,
   Td,
   Flex,
+  IconButton,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import Card from 'components/card/Card.js';
 import MiniStatistics from 'components/card/MiniStatistics';
 import IconBox from 'components/icons/IconBox';
-import { MdBook, MdPeople, MdTrendingUp, MdSearch, MdAssignment } from 'react-icons/md';
+import { MdBook, MdPeople, MdTrendingUp, MdSearch, MdAssignment, MdFileDownload, MdPictureAsPdf, MdRefresh, MdRemoveRedEye } from 'react-icons/md';
 
 const mockSubjects = [
   { id: 1, code: 'ENG101', name: 'English', className: 'Class 1', teacher: 'Ayesha Khan', periodsPerWeek: 5 },
@@ -39,6 +49,8 @@ const mockSubjects = [
 export default function Subjects() {
   const [cls, setCls] = useState('All');
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
@@ -66,6 +78,11 @@ export default function Subjects() {
           <Heading as="h3" size="lg" mb={1} color={textColor}>Subjects</Heading>
           <Text color={textColorSecondary}>Manage subjects mapping to classes and teachers</Text>
         </Box>
+        <ButtonGroup>
+          <Button leftIcon={<MdRefresh />} variant='outline' onClick={()=>window.location.reload()}>Refresh</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap="20px" mb={5}>
@@ -125,6 +142,7 @@ export default function Subjects() {
                 <Th>Teacher</Th>
                 <Th>Periods/Week</Th>
                 <Th>Status</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -140,12 +158,58 @@ export default function Subjects() {
                       {s.periodsPerWeek >= 6 ? 'Core' : 'Regular'}
                     </Badge>
                   </Td>
+                  <Td>
+                    <IconButton aria-label="View" icon={<MdRemoveRedEye />} size="sm" variant="ghost" onClick={()=>{ setSelected(s); onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Subject Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+                <Box>
+                  <Text fontWeight="600">Code</Text>
+                  <Text>{selected.code}</Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="600">Subject</Text>
+                  <Text>{selected.name}</Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="600">Class</Text>
+                  <Text>{selected.className}</Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="600">Teacher</Text>
+                  <Text>{selected.teacher}</Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="600">Periods/Week</Text>
+                  <Text>{selected.periodsPerWeek}</Text>
+                </Box>
+                <Box>
+                  <Text fontWeight="600">Type</Text>
+                  <Badge ml={2} colorScheme={selected.periodsPerWeek >= 6 ? 'purple' : 'green'}>
+                    {selected.periodsPerWeek >= 6 ? 'Core' : 'Regular'}
+                  </Badge>
+                </Box>
+              </SimpleGrid>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

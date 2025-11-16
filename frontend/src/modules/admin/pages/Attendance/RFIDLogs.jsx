@@ -7,6 +7,8 @@ import {
   SimpleGrid,
   Badge,
   Icon,
+  ButtonGroup,
+  IconButton,
   Table,
   Thead,
   Tbody,
@@ -18,9 +20,19 @@ import {
   InputLeftElement,
   Select,
   Button,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  FormControl,
+  FormLabel,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { MdListAlt, MdCheckCircle, MdCancel, MdCreditCard, MdSearch, MdFilterList, MdFileDownload } from 'react-icons/md';
+import { MdListAlt, MdCheckCircle, MdCancel, MdCreditCard, MdSearch, MdFilterList, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -37,11 +49,16 @@ export default function RFIDLogs() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [location, setLocation] = useState('all');
+  const [rows, setRows] = useState(mockLogs);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ status: 'Success', location: '' });
 
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const filtered = useMemo(() => {
-    return mockLogs.filter((l) => {
+    return rows.filter((l) => {
       const matchesSearch =
         !search ||
         l.student.toLowerCase().includes(search.toLowerCase()) ||
@@ -51,7 +68,7 @@ export default function RFIDLogs() {
       const matchesLocation = location === 'all' || l.location.toLowerCase().includes(location);
       return matchesSearch && matchesStatus && matchesLocation;
     });
-  }, [search, status, location]);
+  }, [rows, search, status, location]);
 
   const stats = useMemo(() => {
     const total = mockLogs.length;
@@ -69,9 +86,10 @@ export default function RFIDLogs() {
           <Heading as="h3" size="lg" mb={1}>RFID Logs</Heading>
           <Text color={textColorSecondary}>Live and historical RFID scan records</Text>
         </Box>
-        <Button leftIcon={<Icon as={MdFileDownload} />} colorScheme="blue" variant="solid">
-          Export CSV
-        </Button>
+        <ButtonGroup>
+          <Button leftIcon={<Icon as={MdFileDownload} />} variant="outline" colorScheme="blue">Export CSV</Button>
+          <Button leftIcon={<Icon as={MdPictureAsPdf} />} colorScheme="blue">Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       {/* KPIs */}
@@ -162,6 +180,7 @@ export default function RFIDLogs() {
                 <Th>Bus</Th>
                 <Th>Status</Th>
                 <Th>Location</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -176,12 +195,75 @@ export default function RFIDLogs() {
                     <Badge colorScheme={l.status === 'Success' ? 'green' : 'red'}>{l.status}</Badge>
                   </Td>
                   <Td><Text color={textColorSecondary}>{l.location}</Text></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(l); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(l); setForm({ status: l.status, location: l.location }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      {/* View Modal */}
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Log Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Time</Text><Text>{selected.time}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Student</Text><Text>{selected.student}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>ID</Text><Text>{selected.studentId}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Card</Text><Text>{selected.card}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Bus</Text><Text>{selected.bus}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Status</Text><Badge colorScheme={selected.status==='Success'?'green':'red'}>{selected.status}</Badge></Flex>
+                <Flex justify='space-between'><Text fontWeight='600'>Location</Text><Text>{selected.location}</Text></Flex>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Log</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <FormControl mb={3}>
+                  <FormLabel>Status</FormLabel>
+                  <Select value={form.status} onChange={(e)=> setForm(f=>({ ...f, status: e.target.value }))}>
+                    <option>Success</option>
+                    <option>Failed</option>
+                  </Select>
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Location</FormLabel>
+                  <Input value={form.location} onChange={(e)=> setForm(f=>({ ...f, location: e.target.value }))} />
+                </FormControl>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              if(!selected) return;
+              setRows(prev => prev.map(r => r.id===selected.id ? { ...r, status: form.status, location: form.location } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

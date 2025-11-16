@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Flex,
@@ -7,11 +7,28 @@ import {
   SimpleGrid,
   Badge,
   useColorModeValue,
+  HStack,
+  Button,
+  ButtonGroup,
+  Select,
+  Input,
+  Tooltip,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
 } from '@chakra-ui/react';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
-import { MdWhatshot, MdCalendarToday, MdThumbUp } from 'react-icons/md';
+import { MdWhatshot, MdCalendarToday, MdThumbUp, MdFileDownload, MdPictureAsPdf, MdRefresh } from 'react-icons/md';
 
 const days = ['Mon','Tue','Wed','Thu','Fri','Sat'];
 const periods = Array.from({ length: 8 }, (_, i) => `P${i+1}`);
@@ -27,16 +44,32 @@ const heat = [
 
 export default function AttendanceHeatmaps() {
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
+  const disabledColor = useColorModeValue('#EDF2F7', '#2D3748');
+
+  const [cls, setCls] = useState('All');
+  const [section, setSection] = useState('All');
+  const [week, setWeek] = useState('');
+  const [heatMap, setHeatMap] = useState(heat);
+  const [cell, setCell] = useState({ open: false, dayIndex: 0, periodIndex: 0, value: 0 });
 
   const getColor = (val) => {
-    if (val === 0) return useColorModeValue('#EDF2F7', '#2D3748');
+    if (val === 0) return disabledColor;
     if (val >= 95) return '#38A169';
     if (val >= 90) return '#D69E2E';
     return '#E53E3E';
   };
 
-  const peak = { day: 'Fri', period: 'P4', rate: 96 };
-  const best = { day: 'Mon', rate: 97 };
+  const peak = useMemo(() => {
+    let max = -1, di = 0, pj = 0;
+    heatMap.forEach((row, i) => row.forEach((v, j) => { if (v > max) { max = v; di = i; pj = j; } }));
+    return { day: days[di], period: periods[pj], rate: max > -1 ? max : 0 };
+  }, [heatMap]);
+
+  const best = useMemo(() => {
+    let max = -1, di = 0;
+    heatMap.forEach((row, i) => row.forEach((v) => { if (v > max) { max = v; di = i; } }));
+    return { day: days[di], rate: max > -1 ? max : 0 };
+  }, [heatMap]);
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
@@ -45,6 +78,11 @@ export default function AttendanceHeatmaps() {
           <Heading as="h3" size="lg" mb={1}>Attendance Heatmaps</Heading>
           <Text color={textColorSecondary}>Visualize attendance concentration by day and period</Text>
         </Box>
+        <ButtonGroup>
+          <Button leftIcon={<MdRefresh />} variant="outline" onClick={()=>window.location.reload()}>Refresh</Button>
+          <Button leftIcon={<MdFileDownload />} variant="outline" colorScheme="blue">Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme="blue">Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       {/* KPIs */}
@@ -66,6 +104,25 @@ export default function AttendanceHeatmaps() {
         />
       </SimpleGrid>
 
+      <Card mb={5}>
+        <Flex p={4} justify="space-between" align="center" direction={{ base: 'column', md: 'row' }} gap={4}>
+          <HStack>
+            <Select w="180px" value={cls} onChange={(e)=>setCls(e.target.value)}>
+              <option>All</option>
+              <option>Class 1</option>
+              <option>Class 2</option>
+              <option>Class 3</option>
+            </Select>
+            <Select w="120px" value={section} onChange={(e)=>setSection(e.target.value)}>
+              <option>All</option>
+              <option>A</option>
+              <option>B</option>
+            </Select>
+            <Input type="date" value={week} onChange={(e)=>setWeek(e.target.value)} w="180px" />
+          </HStack>
+        </Flex>
+      </Card>
+
       {/* Heatmap */}
       <Card p={4}>
         <SimpleGrid columns={periods.length + 1} spacing={2}>
@@ -76,10 +133,24 @@ export default function AttendanceHeatmaps() {
           {days.map((d, i) => (
             <React.Fragment key={d}>
               <Box fontWeight='600'>{d}</Box>
-              {heat[i].map((v, j) => (
-                <Box key={`${i}-${j}`} h='40px' borderRadius='md' bg={getColor(v)} display='flex' alignItems='center' justifyContent='center' color='white' fontWeight='700'>
-                  {v ? `${v}%` : '-'}
-                </Box>
+              {heatMap[i].map((v, j) => (
+                <Tooltip key={`t-${i}-${j}`} label={`${d} ${periods[j]}: ${v || '-'}%`}>
+                  <Box
+                    key={`${i}-${j}`}
+                    h='40px'
+                    borderRadius='md'
+                    bg={getColor(v)}
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='center'
+                    color='white'
+                    fontWeight='700'
+                    cursor={v === 0 ? 'not-allowed' : 'pointer'}
+                    onClick={()=> v !== 0 && setCell({ open: true, dayIndex: i, periodIndex: j, value: v })}
+                  >
+                    {v ? `${v}%` : '-'}
+                  </Box>
+                </Tooltip>
               ))}
             </React.Fragment>
           ))}
@@ -91,6 +162,37 @@ export default function AttendanceHeatmaps() {
           <Badge colorScheme='red'>{'< 90%'}</Badge>
         </Flex>
       </Card>
+
+      <Modal isOpen={cell.open} onClose={()=>setCell((c)=>({ ...c, open:false }))} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{days[cell.dayIndex]} — {periods[cell.periodIndex]}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={2} color={textColorSecondary}>Edit attendance for this slot</Text>
+            <HStack>
+              <Slider value={cell.value} min={50} max={100} step={1} onChange={(v)=>setCell((c)=>({ ...c, value:v }))}>
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+              <Badge>{cell.value}%</Badge>
+            </HStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={()=>setCell((c)=>({ ...c, open:false }))}>Close</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setHeatMap((m)=>{
+                const next = m.map((row)=>row.slice());
+                next[cell.dayIndex][cell.periodIndex] = cell.value;
+                return next;
+              });
+              setCell((c)=>({ ...c, open:false }));
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

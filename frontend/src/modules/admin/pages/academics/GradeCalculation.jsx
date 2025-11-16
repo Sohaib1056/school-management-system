@@ -5,6 +5,7 @@ import {
   Text,
   HStack,
   Button,
+  ButtonGroup,
   NumberInput,
   NumberInputField,
   SimpleGrid,
@@ -20,7 +21,7 @@ import {
 import Card from 'components/card/Card.js';
 import MiniStatistics from 'components/card/MiniStatistics';
 import IconBox from 'components/icons/IconBox';
-import { MdSave, MdRestore, MdAssignment, MdLeaderboard } from 'react-icons/md';
+import { MdSave, MdRestore, MdAssignment, MdLeaderboard, MdFileDownload, MdPictureAsPdf, MdRefresh } from 'react-icons/md';
 
 export default function GradeCalculation() {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -46,6 +47,11 @@ export default function GradeCalculation() {
           <Heading as="h3" size="lg" mb={1} color={textColor}>Grade Calculation</Heading>
           <Text color={textColorSecondary}>Configure grade bands and preview computed grade</Text>
         </Box>
+        <ButtonGroup>
+          <Button leftIcon={<MdRefresh />} variant='outline' onClick={()=>window.location.reload()}>Refresh</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <Card mb={5}>

@@ -19,6 +19,7 @@ export default function StudentPerformanceReport() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [preset, setPreset] = useState('none');
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const stats = useMemo(() => ({ avgGrade: 86, top: 12, risk: 5, exams: 6 }), []);
@@ -62,7 +63,7 @@ export default function StudentPerformanceReport() {
       </SimpleGrid>
 
       <Card p={4} mb={5}>
-        <Flex gap={3} direction={{ base: 'column', md: 'row' }} align={{ md: 'center' }}>
+        <Flex gap={3} direction={{ base: 'column', md: 'row' }} align={{ md: 'center' }} flexWrap='wrap'>
           <InputGroup maxW='280px'>
             <InputLeftElement pointerEvents='none'>
               <MdSearch color='gray.400' />
@@ -83,8 +84,20 @@ export default function StudentPerformanceReport() {
           </Select>
           <Input type='date' maxW='200px' value={from} onChange={(e) => setFrom(e.target.value)} />
           <Input type='date' maxW='200px' value={to} onChange={(e) => setTo(e.target.value)} />
-          <Button size='sm' onClick={() => applyPreset(7)}>Last 7d</Button>
-          <Button size='sm' onClick={() => applyPreset(30)}>Last 30d</Button>
+          <ButtonGroup isAttached size='sm' variant='outline'>
+            <Button
+              colorScheme={preset==='7' ? 'blue' : undefined}
+              onClick={() => { applyPreset(7); setPreset('7'); }}
+            >
+              Last 7d
+            </Button>
+            <Button
+              colorScheme={preset==='30' ? 'blue' : undefined}
+              onClick={() => { applyPreset(30); setPreset('30'); }}
+            >
+              Last 30d
+            </Button>
+          </ButtonGroup>
         </Flex>
       </Card>
 

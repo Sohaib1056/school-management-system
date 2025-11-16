@@ -7,6 +7,12 @@ import {
   SimpleGrid,
   Badge,
   Icon,
+  ButtonGroup,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
   Table,
   Thead,
   Tbody,
@@ -16,10 +22,20 @@ import {
   Input,
   Select,
   Button,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
   useColorModeValue,
   Progress,
+  NumberInput,
+  NumberInputField,
 } from '@chakra-ui/react';
-import { MdAssessment, MdCalendarMonth, MdCheckCircle, MdCancel, MdAvTimer, MdFileDownload } from 'react-icons/md';
+import { MdAssessment, MdCalendarMonth, MdCheckCircle, MdCancel, MdAvTimer, MdFileDownload, MdRemoveRedEye, MdMoreVert } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -40,6 +56,11 @@ const mockClassReport = [
 
 export default function AttendanceReports() {
   const [range, setRange] = useState('this-month');
+  const disc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [selected, setSelected] = useState(null);
+  const [rows, setRows] = useState(mockClassReport);
+  const [form, setForm] = useState({ present: 0, absent: 0, late: 0, total: 0, class: '' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const totals = useMemo(() => mockSummary, []);
@@ -52,7 +73,10 @@ export default function AttendanceReports() {
           <Heading as="h3" size="lg" mb={1}>Attendance Reports</Heading>
           <Text color={textColorSecondary}>Insights and summaries across classes</Text>
         </Box>
-        <Button leftIcon={<MdFileDownload />} colorScheme="blue">Download PDF</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdFileDownload />} colorScheme="blue">Download PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       {/* KPIs */}
@@ -104,10 +128,11 @@ export default function AttendanceReports() {
                 <Th isNumeric>Absent</Th>
                 <Th isNumeric>Late</Th>
                 <Th isNumeric>Overall</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockClassReport.map((row) => {
+              {rows.map((row) => {
                 const overall = Math.round((row.present / row.total) * 100);
                 return (
                   <Tr key={row.class} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
@@ -123,6 +148,18 @@ export default function AttendanceReports() {
                         </Box>
                       </Flex>
                     </Td>
+                    <Td>
+                      <Flex align='center' gap={1}>
+                        <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected({ ...row, overall }); disc.onOpen(); }} />
+                        <Menu>
+                          <MenuButton as={IconButton} aria-label='More' icon={<MdMoreVert />} size='sm' variant='ghost' />
+                          <MenuList>
+                            <MenuItem onClick={()=>{ setSelected({ ...row, overall }); disc.onOpen(); }}>View Details</MenuItem>
+                            <MenuItem onClick={()=>{ setSelected(row); setForm({ class: row.class, total: row.total, present: row.present, absent: row.absent, late: row.late }); editDisc.onOpen(); }}>Edit</MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </Flex>
+                    </Td>
                   </Tr>
                 );
               })}
@@ -130,6 +167,57 @@ export default function AttendanceReports() {
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={disc.isOpen} onClose={disc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Class Report</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Class</Text><Text>{selected.class}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Present</Text><Text>{selected.present} / {selected.total}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Absent</Text><Text>{selected.absent}</Text></Flex>
+                <Flex justify='space-between' mb={2}><Text fontWeight='600'>Late</Text><Text>{selected.late}</Text></Flex>
+                <Flex justify='space-between'><Text fontWeight='600'>Overall</Text><Text>{selected.overall}%</Text></Flex>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' onClick={disc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Class Summary</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Box>
+              <Flex justify='space-between' mb={3}><Text fontWeight='600'>Class</Text><Text>{form.class}</Text></Flex>
+              <NumberInput value={form.present} min={0} max={form.total} onChange={(v)=> setForm(f=>({ ...f, present: Number(v)||0 }))} mb={3}>
+                <NumberInputField placeholder='Present' />
+              </NumberInput>
+              <NumberInput value={form.absent} min={0} max={form.total} onChange={(v)=> setForm(f=>({ ...f, absent: Number(v)||0 }))} mb={3}>
+                <NumberInputField placeholder='Absent' />
+              </NumberInput>
+              <NumberInput value={form.late} min={0} max={form.total} onChange={(v)=> setForm(f=>({ ...f, late: Number(v)||0 }))}>
+                <NumberInputField placeholder='Late' />
+              </NumberInput>
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => prev.map(r => r.class===form.class ? { ...r, present: form.present, absent: form.absent, late: form.late } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

@@ -285,32 +285,20 @@ export default function AdminDashboard() {
           <Text fontSize='lg' fontWeight='bold' mb='20px'>
             Weekly Attendance Trend
           </Text>
-          <SimpleGrid columns={7} gap='10px'>
-            {mockAttendanceStats.slice(0, 7).map(day => (
-              <VStack key={day.day}>
-                <Box
-                  h={`${day.percentage}px`}
-                  w='100%'
-                  bg={day.percentage >= 90 ? 'green.400' : day.percentage >= 75 ? 'orange.400' : 'red.400'}
-                  borderRadius='4px'
-                  position='relative'
-                >
-                  <Text
-                    position='absolute'
-                    bottom='-20px'
-                    left='50%'
-                    transform='translateX(-50%)'
-                    fontSize='xs'
-                    color='gray.600'
-                  >
-                    {day.day}
-                  </Text>
-                </Box>
-                <Text fontSize='xs' color='gray.500' mt='20px'>
-                  {day.percentage}%
-                </Text>
-              </VStack>
-            ))}
+          <SimpleGrid columns={7} gap='12px' alignItems='end'>
+            {mockAttendanceStats.slice(0, 7).map((day) => {
+              const barH = Math.round((day.percentage / 100) * 120);
+              const color = day.percentage >= 90 ? 'green.400' : day.percentage >= 75 ? 'orange.400' : 'red.400';
+              return (
+                <VStack key={day.day} spacing={2} align='center'>
+                  <Box h='120px' w='22px' bg='gray.200' borderRadius='6px' position='relative' overflow='hidden'>
+                    <Box position='absolute' bottom='0' left='0' right='0' m='auto' w='100%' h={`${barH}px`} bg={color} borderRadius='6px' />
+                  </Box>
+                  <Text fontSize='xs' color='gray.600'>{day.day}</Text>
+                  <Text fontSize='xs' color='gray.500'>{day.percentage}%</Text>
+                </VStack>
+              );
+            })}
           </SimpleGrid>
         </Card>
 

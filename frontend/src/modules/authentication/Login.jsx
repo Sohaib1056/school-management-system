@@ -58,15 +58,10 @@ function SignIn() {
   // Handle click to show/hide password
   const handleClick = () => setShow(!show);
 
-  // Check if already authenticated
+  // On mount and auth changes, just clear previous errors (do not auto-redirect)
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/admin/dashboard');
-    }
-    
-    // Clear any previous errors
     clearError();
-  }, [isAuthenticated, navigate, clearError]);
+  }, [clearError, isAuthenticated]);
 
   // Handle form submission
   const handleSubmit = async (e) => {

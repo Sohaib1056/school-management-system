@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input } from '@chakra-ui/react';
-import { MdEvent, MdAdd, MdCalendarToday } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, IconButton, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormLabel } from '@chakra-ui/react';
+import { MdEvent, MdAdd, MdCalendarToday, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -13,6 +13,11 @@ const mockEvents = [
 
 export default function EventCalendar() {
   const [month, setMonth] = useState('2025-11');
+  const [rows, setRows] = useState(mockEvents);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', title: '', date: '', audience: '', type: 'Holiday' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const stats = useMemo(() => ({ total: mockEvents.length, upcoming: 2, thisMonth: 2 }), []);
@@ -24,7 +29,11 @@ export default function EventCalendar() {
           <Heading as="h3" size="lg" mb={1}>Event Calendar</Heading>
           <Text color={textColorSecondary}>School-wide events and important dates</Text>
         </Box>
-        <Button leftIcon={<MdAdd />} colorScheme='blue'>Add Event</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdAdd />} colorScheme='blue' onClick={()=>{ setForm({ id: `EV-${String(rows.length+1).padStart(3,'0')}`, title: 'New Event', date: month+'-01', audience: 'All', type: 'Meeting' }); editDisc.onOpen(); }}>Add Event</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5} mb={5}>
@@ -55,22 +64,80 @@ export default function EventCalendar() {
                 <Th>Date</Th>
                 <Th>Audience</Th>
                 <Th>Type</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockEvents.map((e) => (
+              {rows.map((e) => (
                 <Tr key={e.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
                   <Td><Text fontWeight='600'>{e.id}</Text></Td>
                   <Td>{e.title}</Td>
                   <Td><Text color={textColorSecondary}>{e.date}</Text></Td>
                   <Td>{e.audience}</Td>
                   <Td><Badge colorScheme='blue'>{e.type}</Badge></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(e); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setForm({ ...e }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Event Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selected && (
+              <Box>
+                <Text><strong>ID:</strong> {selected.id}</Text>
+                <Text><strong>Title:</strong> {selected.title}</Text>
+                <Text><strong>Date:</strong> {selected.date}</Text>
+                <Text><strong>Audience:</strong> {selected.audience}</Text>
+                <Text><strong>Type:</strong> {selected.type}</Text>
+              </Box>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Event</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Title</FormLabel>
+              <Input value={form.title} onChange={(e)=> setForm(f=>({ ...f, title: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Date</FormLabel>
+              <Input type='date' value={form.date} onChange={(e)=> setForm(f=>({ ...f, date: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Audience</FormLabel>
+              <Input value={form.audience} onChange={(e)=> setForm(f=>({ ...f, audience: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Type</FormLabel>
+              <Select value={form.type.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, type: e.target.value==='holiday'?'Holiday':e.target.value==='exam'?'Exam':'Meeting' }))}>
+                <option value='holiday'>Holiday</option>
+                <option value='exam'>Exam</option>
+                <option value='meeting'>Meeting</option>
+              </Select>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(r => r.id===form.id ? { ...form } : r)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

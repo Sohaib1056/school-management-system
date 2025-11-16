@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input } from '@chakra-ui/react';
-import { MdAssignment, MdPlaylistAdd, MdEdit, MdSave } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, IconButton, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdAssignment, MdPlaylistAdd, MdEdit, MdSave, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -14,6 +14,11 @@ const mockStructures = [
 export default function FeeStructure() {
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
   const [selected, setSelected] = useState('all');
+  const [rows, setRows] = useState(mockStructures);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [active, setActive] = useState(null);
+  const [form, setForm] = useState({ class: '', tuition: 0, transport: 0, exam: 0, misc: 0, discount: 0 });
 
   const totals = useMemo(() => ({
     classes: mockStructures.length,
@@ -28,10 +33,11 @@ export default function FeeStructure() {
           <Heading as="h3" size="lg" mb={1}>Fee Structure</Heading>
           <Text color={textColorSecondary}>Define fee heads per class</Text>
         </Box>
-        <Flex gap={3}>
-          <Button leftIcon={<MdPlaylistAdd />} colorScheme='blue'>Add Structure</Button>
-          <Button leftIcon={<MdSave />} variant='outline' colorScheme='blue'>Save Changes</Button>
-        </Flex>
+        <ButtonGroup>
+          <Button leftIcon={<MdPlaylistAdd />} colorScheme='blue' onClick={()=>{ setForm({ class: `Class ${rows.length+1}`, tuition: 0, transport: 0, exam: 0, misc: 0, discount: 0 }); editDisc.onOpen(); }}>Add Structure</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5} mb={5}>
@@ -69,7 +75,7 @@ export default function FeeStructure() {
               </Tr>
             </Thead>
             <Tbody>
-              {mockStructures.map((r) => {
+              {rows.map((r) => {
                 const total = r.tuition + r.transport + r.exam + r.misc;
                 const net = Math.round(total * (1 - (r.discount || 0) / 100));
                 if (selected !== 'all' && selected !== r.class) return null;
@@ -84,7 +90,8 @@ export default function FeeStructure() {
                     <Td isNumeric><Text fontWeight='600'>Rs. {total.toLocaleString()}</Text></Td>
                     <Td isNumeric><Text fontWeight='700'>Rs. {net.toLocaleString()}</Text></Td>
                     <Td>
-                      <Button size='sm' variant='outline'>Edit</Button>
+                      <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setActive(r); viewDisc.onOpen(); }} />
+                      <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setForm({ ...r }); editDisc.onOpen(); }} />
                     </Td>
                   </Tr>
                 );
@@ -93,6 +100,74 @@ export default function FeeStructure() {
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Structure Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {active && (
+              <Box>
+                <Text><strong>Class:</strong> {active.class}</Text>
+                <Text><strong>Tuition:</strong> Rs. {active.tuition.toLocaleString()}</Text>
+                <Text><strong>Transport:</strong> Rs. {active.transport.toLocaleString()}</Text>
+                <Text><strong>Exam:</strong> Rs. {active.exam.toLocaleString()}</Text>
+                <Text><strong>Misc:</strong> Rs. {active.misc.toLocaleString()}</Text>
+                <Text><strong>Discount:</strong> {active.discount}%</Text>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{rows.find(r=>r.class===form.class) ? 'Edit Structure' : 'Add Structure'}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={3}>
+              <FormLabel>Class</FormLabel>
+              <Input value={form.class} onChange={(e)=> setForm(f=>({ ...f, class: e.target.value }))} />
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Tuition</FormLabel>
+              <NumberInput value={form.tuition} min={0} onChange={(v)=> setForm(f=>({ ...f, tuition: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Transport</FormLabel>
+              <NumberInput value={form.transport} min={0} onChange={(v)=> setForm(f=>({ ...f, transport: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Exam</FormLabel>
+              <NumberInput value={form.exam} min={0} onChange={(v)=> setForm(f=>({ ...f, exam: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Misc</FormLabel>
+              <NumberInput value={form.misc} min={0} onChange={(v)=> setForm(f=>({ ...f, misc: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Discount %</FormLabel>
+              <NumberInput value={form.discount} min={0} max={100} onChange={(v)=> setForm(f=>({ ...f, discount: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => {
+                const exists = prev.some(r => r.class===form.class);
+                if (exists) return prev.map(r => r.class===form.class ? { ...form } : r);
+                return [...prev, { ...form }];
+              });
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

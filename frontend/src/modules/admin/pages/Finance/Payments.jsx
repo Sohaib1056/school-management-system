@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react';
-import { MdAttachMoney, MdAddCircle, MdCheckCircle, MdSearch } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Select, Input, InputGroup, InputLeftElement, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, IconButton, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { MdAttachMoney, MdAddCircle, MdCheckCircle, MdSearch, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -16,19 +16,22 @@ export default function Payments() {
   const [method, setMethod] = useState('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [rows, setRows] = useState(mockPayments);
   const [selected, setSelected] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', amount: 0, method: 'Cash', date: '', status: 'Success', txnId: '', receivedBy: '' });
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
 
   const stats = useMemo(() => {
-    const total = mockPayments.length;
-    const sum = mockPayments.reduce((s, p) => s + p.amount, 0);
-    const avg = Math.round(sum / total);
+    const total = rows.length;
+    const sum = rows.reduce((s, p) => s + p.amount, 0);
+    const avg = Math.round(sum / Math.max(1, total));
     return { total, sum, avg };
-  }, []);
+  }, [rows]);
 
   const filtered = useMemo(() => {
-    return mockPayments.filter((p) => {
+    return rows.filter((p) => {
       const matchesSearch = !search || p.student.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase());
       const matchesMethod = method === 'all' || p.method.toLowerCase() === method;
       const d = new Date(p.date);
@@ -36,7 +39,7 @@ export default function Payments() {
       const beforeTo = !to || d <= new Date(to);
       return matchesSearch && matchesMethod && afterFrom && beforeTo;
     });
-  }, [search, method, from, to]);
+  }, [rows, search, method, from, to]);
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
@@ -45,7 +48,11 @@ export default function Payments() {
           <Heading as="h3" size="lg" mb={1}>Payments</Heading>
           <Text color={textColorSecondary}>Record and view fee payments</Text>
         </Box>
-        <Button leftIcon={<MdAddCircle />} colorScheme='blue'>Add Payment</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdAddCircle />} colorScheme='blue'>Add Payment</Button>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={5} mb={5}>
@@ -86,7 +93,7 @@ export default function Payments() {
                 <Th>Status</Th>
                 <Th>Txn ID</Th>
                 <Th>Received By</Th>
-                <Th>View</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -101,7 +108,8 @@ export default function Payments() {
                   <Td><Text fontFamily='mono'>{p.txnId}</Text></Td>
                   <Td>{p.receivedBy}</Td>
                   <Td>
-                    <Button size='sm' variant='outline' onClick={() => { setSelected(p); onOpen(); }}>Details</Button>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(p); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(p); setForm({ ...p }); editDisc.onOpen(); }} />
                   </Td>
                 </Tr>
               ))}
@@ -110,7 +118,7 @@ export default function Payments() {
         </Box>
       </Card>
 
-      <Modal isOpen={isOpen} onClose={onClose} size='md'>
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} size='md'>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Payment Details</ModalHeader>
@@ -129,6 +137,40 @@ export default function Payments() {
               </Box>
             )}
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} size='md'>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Payment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={2}>
+            <FormControl mb={3}>
+              <FormLabel>Amount</FormLabel>
+              <NumberInput value={form.amount} min={0} onChange={(v)=> setForm(f=>({ ...f, amount: Number(v)||0 }))}><NumberInputField /></NumberInput>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Method</FormLabel>
+              <Select value={form.method.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, method: e.target.value.charAt(0).toUpperCase()+e.target.value.slice(1) }))}>
+                <option value='cash'>Cash</option>
+                <option value='bank'>Bank</option>
+                <option value='card'>Card</option>
+              </Select>
+            </FormControl>
+            <FormControl mb={3}>
+              <FormLabel>Date</FormLabel>
+              <Input type='date' value={form.date} onChange={(e)=> setForm(f=>({ ...f, date: e.target.value }))} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Received By</FormLabel>
+              <Input value={form.receivedBy} onChange={(e)=> setForm(f=>({ ...f, receivedBy: e.target.value }))} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{ setRows(prev => prev.map(r => r.id===form.id ? { ...r, amount: form.amount, method: form.method, date: form.date, receivedBy: form.receivedBy } : r)); editDisc.onClose(); }}>Save</Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </Box>

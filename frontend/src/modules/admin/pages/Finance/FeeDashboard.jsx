@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Progress } from '@chakra-ui/react';
-import { MdAccountBalance, MdAttachMoney, MdTrendingUp, MdWarning, MdFileDownload } from 'react-icons/md';
+import { Box, Flex, Heading, Text, SimpleGrid, Icon, Badge, Button, ButtonGroup, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td, Progress, IconButton, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Select, Input } from '@chakra-ui/react';
+import { MdAccountBalance, MdAttachMoney, MdTrendingUp, MdWarning, MdFileDownload, MdPictureAsPdf, MdRemoveRedEye, MdEdit } from 'react-icons/md';
 import Card from '../../../../components/card/Card';
 import MiniStatistics from '../../../../components/card/MiniStatistics';
 import IconBox from '../../../../components/icons/IconBox';
@@ -20,6 +20,11 @@ const mockRecentInvoices = [
 
 export default function FeeDashboard() {
   const textColorSecondary = useColorModeValue('gray.600', 'gray.400');
+  const [rows, setRows] = useState(mockRecentInvoices);
+  const [selected, setSelected] = useState(null);
+  const viewDisc = useDisclosure();
+  const editDisc = useDisclosure();
+  const [form, setForm] = useState({ id: '', status: 'Paid', date: '' });
 
   const stats = useMemo(() => mockKpis, []);
 
@@ -30,7 +35,10 @@ export default function FeeDashboard() {
           <Heading as="h3" size="lg" mb={1}>Fee Dashboard</Heading>
           <Text color={textColorSecondary}>Overview of billing, collections and dues</Text>
         </Box>
-        <Button leftIcon={<MdFileDownload />} colorScheme='blue'>Export Summary</Button>
+        <ButtonGroup>
+          <Button leftIcon={<MdFileDownload />} variant='outline' colorScheme='blue'>Export CSV</Button>
+          <Button leftIcon={<MdPictureAsPdf />} colorScheme='blue'>Export PDF</Button>
+        </ButtonGroup>
       </Flex>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={5} mb={5}>
@@ -57,10 +65,11 @@ export default function FeeDashboard() {
                 <Th isNumeric>Amount</Th>
                 <Th>Status</Th>
                 <Th>Date</Th>
+                <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {mockRecentInvoices.map((i) => (
+              {rows.map((i) => (
                 <Tr key={i.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
                   <Td><Text fontWeight='600'>{i.id}</Text></Td>
                   <Td>{i.student}</Td>
@@ -70,12 +79,61 @@ export default function FeeDashboard() {
                     <Badge colorScheme={i.status === 'Paid' ? 'green' : i.status === 'Pending' ? 'yellow' : 'red'}>{i.status}</Badge>
                   </Td>
                   <Td><Text color={textColorSecondary}>{i.date}</Text></Td>
+                  <Td>
+                    <IconButton aria-label='View' icon={<MdRemoveRedEye />} size='sm' variant='ghost' onClick={()=>{ setSelected(i); viewDisc.onOpen(); }} />
+                    <IconButton aria-label='Edit' icon={<MdEdit />} size='sm' variant='ghost' onClick={()=>{ setSelected(i); setForm({ id: i.id, status: i.status, date: i.date }); editDisc.onOpen(); }} />
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
       </Card>
+
+      <Modal isOpen={viewDisc.isOpen} onClose={viewDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Invoice Details</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {selected && (
+              <Box>
+                <Text><strong>Invoice:</strong> {selected.id}</Text>
+                <Text><strong>Student:</strong> {selected.student} ({selected.class})</Text>
+                <Text><strong>Amount:</strong> Rs. {selected.amount.toLocaleString()}</Text>
+                <Text><strong>Status:</strong> {selected.status}</Text>
+                <Text><strong>Date:</strong> {selected.date}</Text>
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={viewDisc.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={editDisc.isOpen} onClose={editDisc.onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Invoice</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Select mb={3} value={form.status.toLowerCase()} onChange={(e)=> setForm(f=>({ ...f, status: e.target.value==='paid'?'Paid':e.target.value==='pending'?'Pending':'Overdue' }))}>
+              <option value='paid'>Paid</option>
+              <option value='pending'>Pending</option>
+              <option value='overdue'>Overdue</option>
+            </Select>
+            <Input type='date' value={form.date} onChange={(e)=> setForm(f=>({ ...f, date: e.target.value }))} />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant='ghost' mr={3} onClick={editDisc.onClose}>Cancel</Button>
+            <Button colorScheme='blue' onClick={()=>{
+              setRows(prev => prev.map(r => r.id===form.id ? { ...r, status: form.status, date: form.date } : r));
+              editDisc.onClose();
+            }}>Save</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }
