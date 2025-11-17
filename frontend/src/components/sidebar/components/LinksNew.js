@@ -167,7 +167,7 @@ export function SidebarLinks(props) {
                     <PopoverArrow />
                     <PopoverBody>
                       <VStack align="stretch" spacing="4px">
-                        {route.items.map((item, subIndex) => (
+                        {route.items.filter(item => !item.hidden).map((item, subIndex) => (
                           <NavLink key={subIndex} to={item.layout + item.path}>
                             <HStack
                               spacing="12px"
@@ -283,7 +283,9 @@ export function SidebarLinks(props) {
       if (
         route.layout === "/admin" ||
         route.layout === "/auth" ||
-        route.layout === "/rtl"
+        route.layout === "/rtl" ||
+        route.layout === "/teacher" ||
+        route.layout === "/student"
       ) {
         const linkContent = (
           <NavLink key={index} to={route.layout + route.path}>

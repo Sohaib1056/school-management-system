@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from './layouts/auth';
 import AdminLayout from './layouts/admin';
 import RTLLayout from './layouts/rtl';
+import TeacherLayout from './layouts/teacher';
 import {
   ChakraProvider,
   // extendTheme
@@ -44,6 +45,16 @@ export default function Main() {
                 <AuthProvider>
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AdminLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                  </ProtectedRoute>
+                </AuthProvider>
+              }
+            />
+            <Route
+              path="teacher/*"
+              element={
+                <AuthProvider>
+                  <ProtectedRoute allowedRoles={['teacher']}>
+                    <TeacherLayout theme={currentTheme} setTheme={setCurrentTheme} />
                   </ProtectedRoute>
                 </AuthProvider>
               }

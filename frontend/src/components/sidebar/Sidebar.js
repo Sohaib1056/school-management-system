@@ -42,7 +42,7 @@ function Sidebar(props) {
 
   // SIDEBAR
   return (
-    <Box display={{ sm: "none", xl: "block" }} w="100%" position='fixed' minH='100%'>
+    <Box display={{ sm: "none", xl: "block" }} w={`${sidebarWidth || 260}px`} h='100vh' position='fixed' top='0' left='0' overflow='hidden'>
       <Box
         bg={sidebarBg}
         transition={variantChange}
