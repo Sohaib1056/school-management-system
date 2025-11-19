@@ -24,6 +24,16 @@ import {
 
 import StudentDashboard from './modules/students/StudentDashboard';
 import StudentModulePlaceholder from './modules/students/StudentModulePlaceholder';
+import ClassList from './modules/students/classes/ClassList';
+import SubjectTeachers from './modules/students/classes/SubjectTeachers';
+import WeeklyTimetable from './modules/students/classes/WeeklyTimetable';
+import DailyRecord from './modules/students/attendance/DailyRecord';
+import MonthlyReport from './modules/students/attendance/MonthlyReport';
+import AttendanceChart from './modules/students/attendance/AttendanceChart';
+import ViewAssignments from './modules/students/assignments/ViewAssignments';
+import SubmitWork from './modules/students/assignments/SubmitWork';
+import TeacherFeedback from './modules/students/assignments/TeacherFeedback';
+import DueDates from './modules/students/assignments/DueDates';
 
 const studentRoutes = [
   {
@@ -46,21 +56,21 @@ const studentRoutes = [
         layout: '/student',
         path: '/classes/list',
         icon: <Icon as={MdSchool} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Class List" subtitle="Your enrolled classes" />,
+        component: <ClassList />,
       },
       {
         name: 'Subject Teachers',
         layout: '/student',
         path: '/classes/teachers',
         icon: <Icon as={MdPerson} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Subject Teachers" subtitle="Teachers for each subject" />,
+        component: <SubjectTeachers />,
       },
       {
         name: 'Weekly Timetable',
         layout: '/student',
         path: '/classes/timetable',
         icon: <Icon as={MdSchedule} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Weekly Timetable" subtitle="Your weekly class schedule" />,
+        component: <WeeklyTimetable />,
       },
     ],
   },
@@ -77,21 +87,21 @@ const studentRoutes = [
         layout: '/student',
         path: '/attendance/daily',
         icon: <Icon as={MdCheckCircle} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Daily Attendance" subtitle="Your daily attendance record" />,
+        component: <DailyRecord />,
       },
       {
         name: 'Monthly Report',
         layout: '/student',
         path: '/attendance/monthly',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Monthly Attendance" subtitle="Monthly attendance summary" />,
+        component: <MonthlyReport />,
       },
       {
         name: 'Attendance Chart',
         layout: '/student',
         path: '/attendance/chart',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Attendance Chart" subtitle="Visualize attendance trends" />,
+        component: <AttendanceChart />,
       },
     ],
   },
@@ -108,28 +118,28 @@ const studentRoutes = [
         layout: '/student',
         path: '/assignments/list',
         icon: <Icon as={MdAssignment} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Assignments" subtitle="View all assignments and homework" />,
+        component: <ViewAssignments />,
       },
       {
         name: 'Submit Work',
         layout: '/student',
         path: '/assignments/submit',
         icon: <Icon as={MdAssignment} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Submit Work" subtitle="Upload your assignment files" />,
+        component: <SubmitWork />,
       },
       {
         name: 'Teacher Feedback',
         layout: '/student',
         path: '/assignments/feedback',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Teacher Feedback" subtitle="View assignment feedback" />,
+        component: <TeacherFeedback />,
       },
       {
         name: 'Due Dates',
         layout: '/student',
         path: '/assignments/due-dates',
         icon: <Icon as={MdSchedule} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Due Dates" subtitle="Upcoming assignment deadlines" />,
+        component: <DueDates />,
       },
     ],
   },
