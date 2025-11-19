@@ -1,33 +1,46 @@
-import React, { Component } from "react";
+import React, { useMemo } from "react";
 import Chart from "react-apexcharts";
 
-class ColumnChart extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      chartData: [],
-      chartOptions: {},
-    };
-  }
+const ColumnChart = ({ chartData, chartOptions, height = 300 }) => {
+  const defaults = useMemo(() => ({
+    chart: {
+      animations: { enabled: false },
+      toolbar: { show: false },
+      sparkline: { enabled: false },
+      zoom: { enabled: false },
+      parentHeightOffset: 0,
+    },
+    tooltip: { fixed: { enabled: true }, followCursor: false, shared: true, intersect: false },
+    legend: { show: false },
+    grid: { padding: { left: 12, right: 12 } },
+    plotOptions: { bar: { borderRadius: 3 } },
+    dataLabels: { enabled: false },
+    states: { hover: { filter: { type: 'none' } }, active: { filter: { type: 'none' } } },
+  }), []);
 
-  componentDidMount() {
-    this.setState({
-      chartData: this.props.chartData,
-      chartOptions: this.props.chartOptions,
-    });
-  }
+  const mergedOptions = useMemo(() => {
+    const o = { ...defaults, ...(chartOptions || {}) };
+    o.chart = { ...(defaults.chart || {}), ...(chartOptions?.chart || {}) };
+    o.tooltip = { ...(defaults.tooltip || {}), ...(chartOptions?.tooltip || {}) };
+    o.grid = { ...(defaults.grid || {}), ...(chartOptions?.grid || {}) };
+    o.legend = { ...(defaults.legend || {}), ...(chartOptions?.legend || {}) };
+    o.plotOptions = { ...(defaults.plotOptions || {}), ...(chartOptions?.plotOptions || {}) };
+    o.dataLabels = { ...(defaults.dataLabels || {}), ...(chartOptions?.dataLabels || {}) };
+    o.states = { ...(defaults.states || {}), ...(chartOptions?.states || {}) };
+    return o;
+  }, [defaults, chartOptions]);
 
-  render() {
-    return (
-      <Chart
-        options={this.state.chartOptions}
-        series={this.state.chartData}
-        type='bar'
-        width='100%'
-        height='100%'
-      />
-    );
-  }
-}
+  const series = chartData || [];
+
+  return (
+    <Chart
+      options={mergedOptions}
+      series={series}
+      type='bar'
+      width='100%'
+      height={height}
+    />
+  );
+};
 
 export default ColumnChart;

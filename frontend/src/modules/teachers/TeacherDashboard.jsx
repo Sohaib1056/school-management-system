@@ -1,139 +1,214 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Flex,
-  SimpleGrid,
-  Text,
-  VStack,
-  HStack,
-  Icon,
-  Badge,
-} from '@chakra-ui/react';
+import { Box, Flex, SimpleGrid, Text, Button, HStack, VStack, Icon, Badge, useColorModeValue } from '@chakra-ui/react';
 import Card from '../../components/card/Card';
 import MiniStatistics from '../../components/card/MiniStatistics';
 import IconBox from '../../components/icons/IconBox';
-import {
-  MdClass,
-  MdAssignmentTurnedIn,
-  MdCheckCircle,
-  MdMessage,
-  MdSchedule,
-  MdAssignment,
-  MdCampaign,
-  MdPeople,
-  MdBarChart,
-} from 'react-icons/md';
-import { mockTodayClasses, mockAssignments } from '../../utils/mockData';
+import { MdClass, MdPeople, MdCheckCircle, MdAssignment, MdWarningAmber, MdAdd, MdEvent, MdUploadFile, MdMessage } from 'react-icons/md';
+import LineChart from '../../components/charts/LineChart';
+import BarChart from '../../components/charts/BarChart';
 
 export default function TeacherDashboard() {
-  const todayClassCount = mockTodayClasses.length;
-  const pendingToReview = mockAssignments.filter(a => a.status === 'pending').length;
-  const attendanceToTake = todayClassCount; // assuming attendance per class
-  const messages = 4; // placeholder
+  const textSecondary = useColorModeValue('gray.600', 'gray.400');
+
+  // Mock quick stats
+  const stats = {
+    todaysClasses: 3,
+    students: 96,
+    attendancePending: 2,
+    homeworkDue: 5,
+    alerts: 1,
+  };
+
+  const homeworkBarSeries = [
+    { name: 'Submitted', data: [22, 18, 25, 28, 20] },
+    { name: 'Pending', data: [8, 12, 5, 2, 10] },
+  ];
+
+  const homeworkBarOptions = {
+    chart: { stacked: true, toolbar: { show: false } },
+    plotOptions: { bar: { columnWidth: '45%', borderRadius: 4 } },
+    dataLabels: { enabled: false },
+    xaxis: { categories: ['7A', '7B', '8A', '8B', '9A'] },
+    grid: { strokeDashArray: 4 },
+    colors: ['#38A169', '#E53E3E'],
+    legend: { show: true },
+  };
+
+  const attendanceTrendSeries = [
+    {
+      name: 'Attendance %',
+      data: [92, 95, 90, 96, 94, 88, 93],
+    },
+  ];
+
+  const attendanceTrendOptions = {
+    chart: { toolbar: { show: false }, sparkline: { enabled: false } },
+    stroke: { curve: 'smooth', width: 3 },
+    dataLabels: { enabled: false },
+    xaxis: { categories: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+    yaxis: { labels: { formatter: (v) => `${v}%` }, min: 0, max: 100 },
+    grid: { strokeDashArray: 4 },
+    colors: ['#3182CE'],
+    tooltip: { y: { formatter: (v) => `${v}%` } },
+    legend: { show: false },
+  };
 
   return (
-    <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
-      <Text fontSize='2xl' fontWeight='bold' mb='10px'>
-        Teacher Dashboard
-      </Text>
-      <Text fontSize='md' color='gray.500' mb='20px'>
-        Welcome back! Here is your teaching overview for today.
-      </Text>
+    <Box pt={{ base: '130px', md: '80px', xl: '80px' }} overflowX='hidden'>
+      <Text fontSize='2xl' fontWeight='bold' mb='8px'>Teacher Dashboard</Text>
+      <Text fontSize='md' color={textSecondary} mb='20px'>Your teaching overview and quick actions</Text>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap='20px' mb='20px'>
-        <MiniStatistics
-          startContent={
-            <IconBox w='56px' h='56px' bg='linear-gradient(90deg, #4481EB 0%, #04BEFE 100%)'
-              icon={<Icon w='28px' h='28px' as={MdClass} color='white' />} />
-          }
-          name="Today's Classes"
-          value={todayClassCount}
-          growth='+1'
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox w='56px' h='56px' bg='linear-gradient(90deg, #FF9A9E 0%, #FAD0C4 100%)'
-              icon={<Icon w='28px' h='28px' as={MdAssignmentTurnedIn} color='white' />} />
-          }
-          name='Pending Reviews'
-          value={pendingToReview}
-          growth='—'
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox w='56px' h='56px' bg='linear-gradient(90deg, #00F260 0%, #0575E6 100%)'
-              icon={<Icon w='28px' h='28px' as={MdCheckCircle} color='white' />} />
-          }
-          name='Attendance to Take'
-          value={attendanceToTake}
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox w='56px' h='56px' bg='linear-gradient(90deg, #A18CD1 0%, #FBC2EB 100%)'
-              icon={<Icon w='28px' h='28px' as={MdMessage} color='white' />} />
-          }
-          name='New Messages'
-          value={messages}
-        />
-      </SimpleGrid>
+      {/* Overview KPIs - single row with horizontal scroll */}
+      <Box mb='20px'>
+        <Flex gap='16px' w='100%' flexWrap='nowrap'>
+          <Box flex='1 1 0' minW='0'>
+            <MiniStatistics
+              compact
+              startContent={<IconBox w='44px' h='44px' bg='linear-gradient(90deg,#4481EB 0%,#04BEFE 100%)' icon={<Icon as={MdClass} w='22px' h='22px' color='white' />} />}
+              name="Today's Classes"
+              value={String(stats.todaysClasses)}
+              trendData={[1,2,2,3,3]}
+              trendColor='#4481EB'
+            />
+          </Box>
+          <Box flex='1 1 0' minW='0'>
+            <MiniStatistics
+              compact
+              startContent={<IconBox w='44px' h='44px' bg='linear-gradient(90deg,#7F7FD5 0%,#86A8E7 100%)' icon={<Icon as={MdPeople} w='22px' h='22px' color='white' />} />}
+              name='Students'
+              value={String(stats.students)}
+              trendData={[70,80,90,95,96]}
+              trendColor='#7F7FD5'
+            />
+          </Box>
+          <Box flex='1 1 0' minW='0'>
+            <MiniStatistics
+              compact
+              startContent={<IconBox w='44px' h='44px' bg='linear-gradient(90deg,#01B574 0%,#51CB97 100%)' icon={<Icon as={MdCheckCircle} w='22px' h='22px' color='white' />} />}
+              name='Attendance Pending'
+              value={String(stats.attendancePending)}
+              trendData={[3,2,2,1,2]}
+              trendColor='#01B574'
+            />
+          </Box>
+          <Box flex='1 1 0' minW='0'>
+            <MiniStatistics
+              compact
+              startContent={<IconBox w='44px' h='44px' bg='linear-gradient(90deg,#FFB36D 0%,#FD7853 100%)' icon={<Icon as={MdAssignment} w='22px' h='22px' color='white' />} />}
+              name='Homework Due'
+              value={String(stats.homeworkDue)}
+              trendData={[2,3,4,5,5]}
+              trendColor='#FD7853'
+            />
+          </Box>
+          <Box flex='1 1 0' minW='0'>
+            <MiniStatistics
+              compact
+              startContent={<IconBox w='44px' h='44px' bg='linear-gradient(90deg,#f5576c 0%,#f093fb 100%)' icon={<Icon as={MdWarningAmber} w='22px' h='22px' color='white' />} />}
+              name='Alerts'
+              value={String(stats.alerts)}
+              trendData={[0,1,0,1,1]}
+              trendColor='#f5576c'
+            />
+          </Box>
+        </Flex>
+      </Box>
 
-      <SimpleGrid columns={{ base: 1, xl: 2 }} gap='20px' mb='20px'>
-        {/* Left: Today's Schedule */}
+      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing='20px'>
+        {/* Upcoming Class */}
         <Card p='20px'>
-          <Flex justify='space-between' align='center' mb='16px'>
-            <Text fontSize='lg' fontWeight='bold'>Today's Schedule</Text>
-            <Badge colorScheme='green'>On Campus</Badge>
+          <Text fontSize='lg' fontWeight='bold' mb='16px'>Upcoming Class</Text>
+          <Flex justify='space-between' align='center' mb='10px'>
+            <VStack align='start' spacing={1}>
+              <Text fontWeight='600'>Class 7B - Mathematics</Text>
+              <Text fontSize='sm' color={textSecondary}>Topic: Fractions and Decimals</Text>
+            </VStack>
+            <HStack>
+              <Badge colorScheme='blue'>10:30 AM</Badge>
+              <Badge>Room 204</Badge>
+            </HStack>
           </Flex>
-          <VStack align='stretch' spacing='12px'>
-            {mockTodayClasses.map((cls) => (
-              <Flex key={cls.id} p='12px' bg='gray.50' borderRadius='8px' justify='space-between' align='center'>
-                <HStack>
-                  <Icon as={MdSchedule} color='blue.500' />
-                  <Box>
-                    <Text fontWeight='600' fontSize='sm'>{cls.time} • {cls.subject} • {cls.className}</Text>
-                    <Text fontSize='xs' color='gray.500'>Room {cls.room} • {cls.topic}</Text>
-                  </Box>
-                </HStack>
-                <Badge colorScheme='blue'>{cls.studentCount} students</Badge>
-              </Flex>
-            ))}
-          </VStack>
-          <Button mt='12px' w='100%' variant='outline' colorScheme='blue'>View Full Schedule</Button>
+          <SimpleGrid minChildWidth='150px' spacing='6px' mt='12px'>
+            <Button leftIcon={<Icon as={MdCheckCircle} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='green' size='sm' variant='outline' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }}>
+              <Box as='span' noOfLines={1} title='Take Attendance' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Take Attendance
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdAssignment} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='purple' size='sm' variant='outline' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }}>
+              <Box as='span' noOfLines={1} title='Assign Homework' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Assign Homework
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdEvent} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='blue' size='sm' variant='outline' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }}>
+              <Box as='span' noOfLines={1} title='View Timetable' sx={{ hyphens: 'auto' }} textAlign='left'>
+                View Timetable
+              </Box>
+            </Button>
+          </SimpleGrid>
         </Card>
 
-        {/* Right: Quick Actions */}
+        {/* Quick Actions */}
         <Card p='20px'>
           <Text fontSize='lg' fontWeight='bold' mb='16px'>Quick Actions</Text>
-          <VStack spacing='12px'>
-            <Button leftIcon={<MdCheckCircle />} w='100%' colorScheme='green'>Mark Attendance</Button>
-            <Button leftIcon={<MdAssignment />} w='100%' colorScheme='blue' variant='outline'>Assign Homework</Button>
-            <Button leftIcon={<MdCampaign />} w='100%' colorScheme='purple' variant='outline'>Create Announcement</Button>
-            <Button leftIcon={<MdSchedule />} w='100%' colorScheme='orange' variant='outline'>View Timetable</Button>
-            <Button leftIcon={<MdPeople />} w='100%' colorScheme='teal' variant='outline'>My Classes</Button>
-          </VStack>
+          <SimpleGrid minChildWidth='150px' spacing='6px'>
+            <Button leftIcon={<Icon as={MdCheckCircle} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='green' variant='solid' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Mark Attendance' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Mark Attendance
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdAssignment} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='purple' variant='outline' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Create Assignment' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Create Assignment
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdUploadFile} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='blue' variant='outline' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Upload Material' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Upload Material
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdMessage} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='gray' variant='outline' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Message Parents' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Message Parents
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdEvent} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='blue' variant='outline' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Weekly Schedule' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Weekly Schedule
+              </Box>
+            </Button>
+            <Button leftIcon={<Icon as={MdAdd} boxSize={{ base: 3.5, md: 4 }} />} colorScheme='teal' variant='outline' size='sm' w='100%'
+              px={{ base: 2, md: 2.5 }} py={{ base: 1, md: 1.5 }} justifyContent='flex-start' whiteSpace='normal' lineHeight='short' wordBreak='break-word' iconSpacing={2} fontSize={{ base: 'xs', md: 'sm' }} minW={0} overflowWrap='anywhere'>
+              <Box as='span' noOfLines={1} title='Add Note' sx={{ hyphens: 'auto' }} textAlign='left'>
+                Add Note
+              </Box>
+            </Button>
+          </SimpleGrid>
         </Card>
       </SimpleGrid>
 
-      {/* Assignments to Grade */}
-      <Card p='20px'>
-        <Flex justify='space-between' align='center' mb='16px'>
-          <Text fontSize='lg' fontWeight='bold'>Assignments to Review</Text>
-          <Icon as={MdBarChart} color='gray.500' />
-        </Flex>
-        <VStack align='stretch' spacing='12px'>
-          {mockAssignments.filter(a => a.status === 'pending').slice(0, 4).map(a => (
-            <Flex key={a.id} p='12px' bg='gray.50' borderRadius='8px' justify='space-between' align='center'>
-              <Box>
-                <Text fontWeight='600' fontSize='sm'>{a.title} • {a.subject}</Text>
-                <Text fontSize='xs' color='gray.500'>Due: {a.dueDate}</Text>
-              </Box>
-              <Badge colorScheme='orange'>Pending</Badge>
-            </Flex>
-          ))}
-        </VStack>
-        <Button mt='12px' w='100%' variant='outline' colorScheme='purple'>View All Assignments</Button>
-      </Card>
+      {/* Teaching Analytics */}
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing='20px' mt='20px'>
+        <Card p='20px'>
+          <Text fontSize='lg' fontWeight='bold' mb='12px'>Attendance Trend (Last 7 days)</Text>
+          <Box h={{ base: '240px', md: '280px' }}>
+            <LineChart chartData={attendanceTrendSeries} chartOptions={attendanceTrendOptions} />
+          </Box>
+        </Card>
+        <Card p='20px'>
+          <Text fontSize='lg' fontWeight='bold' mb='12px'>Homework Submissions</Text>
+          <Box h={{ base: '240px', md: '280px' }}>
+            <BarChart chartData={homeworkBarSeries} chartOptions={homeworkBarOptions} />
+          </Box>
+        </Card>
+      </SimpleGrid>
     </Box>
   );
 }

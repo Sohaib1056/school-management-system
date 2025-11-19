@@ -21,6 +21,13 @@ export const mockUsers = {
     role: 'student',
     avatar: 'https://bit.ly/prosper-baba',
   },
+  driver: {
+    id: 4,
+    name: 'Driver Umar',
+    email: 'driver@mindspire.com',
+    role: 'driver',
+    avatar: 'https://bit.ly/dan-abramov',
+  },
 };
 
 // Mock Statistics for Dashboard

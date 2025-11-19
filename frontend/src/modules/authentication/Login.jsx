@@ -75,6 +75,7 @@ function SignIn() {
       admin: { email: 'admin@mindspire.com', password: 'demo123' },
       teacher: { email: 'teacher@mindspire.com', password: 'demo123' },
       student: { email: 'student@mindspire.com', password: 'demo123' },
+      driver: { email: 'driver@mindspire.com', password: 'demo123' },
     };
     
     const cred = credentials[role];
@@ -144,6 +145,12 @@ function SignIn() {
                   cursor='pointer'
                   onClick={() => quickLogin('student')}>
                   Student
+                </Badge>
+                <Badge
+                  colorScheme='orange'
+                  cursor='pointer'
+                  onClick={() => quickLogin('driver')}>
+                  Driver
                 </Badge>
               </HStack>
               <Text fontSize='xs' color='gray.600'>

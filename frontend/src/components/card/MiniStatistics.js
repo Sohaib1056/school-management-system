@@ -25,6 +25,7 @@ export default function Default(props) {
     // optional mini graph data for percentage cards
     trendData,
     trendColor,
+    compact,
   } = props;
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -36,7 +37,7 @@ export default function Default(props) {
 
   return (
     <Card
-      py='18px'
+      py={compact ? { base: '12px', md: '14px' } : '18px'}
       cursor='pointer'
       transition='all 0.2s ease'
       _hover={{ boxShadow: hoverShadow, transform: "translateY(-2px)" }}
@@ -48,11 +49,11 @@ export default function Default(props) {
         w='100%'
         align='center'
         justify='space-between'
-        gap={4}
+        gap={compact ? 3 : 4}
         flexWrap='wrap'
         rowGap={2}
       >
-        <Flex align='center' gap={4} minW='0'>
+        <Flex align='center' gap={compact ? 3 : 4} minW='0'>
           {startContent}
 
           <Stat my='auto' ms={startContent ? "4px" : "0px"} minW='0'>
@@ -100,8 +101,8 @@ export default function Default(props) {
 
       {/* Bottom row: full-width sparkline graph */}
       {trendData && trendData.length > 0 && (
-        <Box w='100%' h='48px' mt={4}>
-          <SparklineChart data={trendData} color={trendColor} />
+        <Box w='100%' h={compact ? '36px' : '48px'} mt={compact ? 3 : 4}>
+          <SparklineChart data={trendData} color={trendColor} height={compact ? 36 : 48} />
         </Box>
       )}
     </Card>

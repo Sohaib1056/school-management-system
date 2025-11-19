@@ -285,7 +285,8 @@ export function SidebarLinks(props) {
         route.layout === "/auth" ||
         route.layout === "/rtl" ||
         route.layout === "/teacher" ||
-        route.layout === "/student"
+        route.layout === "/student" ||
+        route.layout === "/driver"
       ) {
         const linkContent = (
           <NavLink key={index} to={route.layout + route.path}>

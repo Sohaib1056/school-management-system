@@ -4,6 +4,8 @@ import AuthLayout from './layouts/auth';
 import AdminLayout from './layouts/admin';
 import RTLLayout from './layouts/rtl';
 import TeacherLayout from './layouts/teacher';
+import StudentLayout from './layouts/student';
+import DriverLayout from './layouts/driver';
 import {
   ChakraProvider,
   // extendTheme
@@ -60,10 +62,30 @@ export default function Main() {
               }
             />
             <Route
+              path="student/*"
+              element={
+                <AuthProvider>
+                  <ProtectedRoute allowedRoles={['student']}>
+                    <StudentLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                  </ProtectedRoute>
+                </AuthProvider>
+              }
+            />
+            <Route
               path="rtl/*"
               element={
                 <AuthProvider>
                   <RTLLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                </AuthProvider>
+              }
+            />
+            <Route
+              path="driver/*"
+              element={
+                <AuthProvider>
+                  <ProtectedRoute allowedRoles={['driver']}>
+                    <DriverLayout theme={currentTheme} setTheme={setCurrentTheme} />
+                  </ProtectedRoute>
                 </AuthProvider>
               }
             />

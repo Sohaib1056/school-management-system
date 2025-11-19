@@ -195,6 +195,8 @@ export const getDashboardPath = (role) => {
       return '/teacher/dashboard';
     case 'student':
       return '/student/dashboard';
+    case 'driver':
+      return '/driver/dashboard';
     default:
       return '/auth/sign-in';
   }
@@ -211,5 +213,6 @@ export const getAllowedRoles = (path) => {
   if (path.startsWith('/admin/')) return ['admin'];
   if (path.startsWith('/teacher/')) return ['teacher'];
   if (path.startsWith('/student/')) return ['student'];
+  if (path.startsWith('/driver/')) return ['driver'];
   return ['admin', 'teacher', 'student']; // Allow all roles for other paths
 };

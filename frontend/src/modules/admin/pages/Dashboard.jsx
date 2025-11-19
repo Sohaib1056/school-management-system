@@ -57,14 +57,14 @@ export default function AdminDashboard() {
 
       {/* KPI Cards */}
       <Box overflowX='auto' mb='20px'>
-        <SimpleGrid minChildWidth='260px' spacing='20px'>
+        <SimpleGrid minChildWidth='240px' spacing='16px'>
           <MiniStatistics
             startContent={
               <IconBox
-                w='56px'
-                h='56px'
+                w='48px'
+                h='48px'
                 bg='linear-gradient(90deg, #4481EB 0%, #04BEFE 100%)'
-                icon={<Icon w='28px' h='28px' as={MdPerson} color='white' />}
+                icon={<Icon w='24px' h='24px' as={MdPerson} color='white' />}
               />
             }
             name='Total Students'
@@ -72,6 +72,7 @@ export default function AdminDashboard() {
             growth='+5%'
             trendData={[900, 1000, 1100, 1150, 1200, 1225, mockStats.totalStudents]}
             trendColor='#4481EB'
+            compact
             endContent={
               <Flex me='16px' mt='10px'>
                 <Text color='green.500' fontSize='sm' fontWeight='700' me='5px'>
@@ -87,10 +88,10 @@ export default function AdminDashboard() {
           <MiniStatistics
             startContent={
               <IconBox
-                w='56px'
-                h='56px'
+                w='48px'
+                h='48px'
                 bg='linear-gradient(90deg, #868CFF 0%, #4318FF 100%)'
-                icon={<Icon w='28px' h='28px' as={MdPeople} color='white' />}
+                icon={<Icon w='24px' h='24px' as={MdPeople} color='white' />}
               />
             }
             name='Total Teachers'
@@ -98,6 +99,7 @@ export default function AdminDashboard() {
             growth='+2%'
             trendData={[60, 65, 70, 72, 78, 82, mockStats.totalTeachers]}
             trendColor='#868CFF'
+            compact
             endContent={
               <Flex me='16px' mt='10px'>
                 <Text color='green.500' fontSize='sm' fontWeight='700' me='5px'>
@@ -113,30 +115,31 @@ export default function AdminDashboard() {
           <MiniStatistics
             startContent={
               <IconBox
-                w='56px'
-                h='56px'
+                w='48px'
+                h='48px'
                 bg='linear-gradient(90deg, #00C6FB 0%, #005BEA 100%)'
-                icon={<Icon w='28px' h='28px' as={MdDirectionsBus} color='white' />}
+                icon={<Icon w='24px' h='24px' as={MdDirectionsBus} color='white' />}
               />
             }
             name='Active Buses'
             value={formatNumber(mockStats.activeBuses)}
             trendData={[8, 9, 10, 11, 12, 11, mockStats.activeBuses]}
             trendColor='#00C6FB'
+            compact
             endContent={
-              <Badge colorScheme='green' fontSize='sm' mt='10px'>
-                All Operational
-              </Badge>
+              <Box mt='10px' px='10px' py='6px' borderRadius='full' bg='green.50' border='1px solid' borderColor='green.300' boxShadow='sm' fontSize='xs' fontWeight='800' color='green.600' letterSpacing='0.4px' whiteSpace='nowrap'>
+                ALL OPERATIONAL
+              </Box>
             }
           />
           
           <MiniStatistics
             startContent={
               <IconBox
-                w='56px'
-                h='56px'
+                w='48px'
+                h='48px'
                 bg='linear-gradient(90deg, #00F260 0%, #0575E6 100%)'
-                icon={<Icon w='28px' h='28px' as={MdCheckCircle} color='white' />}
+                icon={<Icon w='24px' h='24px' as={MdCheckCircle} color='white' />}
               />
             }
             name="Today's Attendance"
@@ -144,6 +147,7 @@ export default function AdminDashboard() {
             growth='+3%'
             trendData={[80, 85, 88, 90, 91, 92, mockStats.todayAttendance]}
             trendColor='#00F260'
+            compact
             endContent={
               <Flex me='16px' mt='10px'>
                 <Text color='green.500' fontSize='sm' fontWeight='700' me='5px'>
