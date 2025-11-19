@@ -34,6 +34,14 @@ import ViewAssignments from './modules/students/assignments/ViewAssignments';
 import SubmitWork from './modules/students/assignments/SubmitWork';
 import TeacherFeedback from './modules/students/assignments/TeacherFeedback';
 import DueDates from './modules/students/assignments/DueDates';
+import ExamTimetable from './modules/students/exams/ExamTimetable';
+import Results from './modules/students/exams/Results';
+import GradeCard from './modules/students/exams/GradeCard';
+import PerformanceAnalytics from './modules/students/exams/PerformanceAnalytics';
+import Notes from './modules/students/materials/Notes';
+import PDFs from './modules/students/materials/PDFs';
+import Videos from './modules/students/materials/Videos';
+import Resources from './modules/students/materials/Resources';
 
 const studentRoutes = [
   {
@@ -156,28 +164,28 @@ const studentRoutes = [
         layout: '/student',
         path: '/exams/timetable',
         icon: <Icon as={MdSchedule} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Exam Timetable" subtitle="Upcoming exams and dates" />,
+        component: <ExamTimetable />,
       },
       {
         name: 'Results',
         layout: '/student',
         path: '/exams/results',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Results" subtitle="Your results and grades" />,
+        component: <Results />,
       },
       {
         name: 'Grade Card',
         layout: '/student',
         path: '/exams/grade-card',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Grade Card" subtitle="Download your grade card" />,
+        component: <GradeCard />,
       },
       {
         name: 'Performance Analytics',
         layout: '/student',
         path: '/exams/analytics',
         icon: <Icon as={MdOutlineAnalytics} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Performance Analytics" subtitle="Analyze your performance" />,
+        component: <PerformanceAnalytics />,
       },
     ],
   },
@@ -194,28 +202,28 @@ const studentRoutes = [
         layout: '/student',
         path: '/materials/notes',
         icon: <Icon as={MdBook} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Notes" subtitle="Lecture notes and study guides" />,
+        component: <Notes />,
       },
       {
         name: 'PDFs',
         layout: '/student',
         path: '/materials/pdfs',
         icon: <Icon as={MdPictureAsPdf} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="PDFs" subtitle="Downloadable resources" />,
+        component: <PDFs />,
       },
       {
         name: 'Videos',
         layout: '/student',
         path: '/materials/videos',
         icon: <Icon as={MdVideoLibrary} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Lecture Videos" subtitle="Recorded lectures" />,
+        component: <Videos />,
       },
       {
         name: 'Resources',
         layout: '/student',
         path: '/materials/resources',
         icon: <Icon as={MdBook} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Resources" subtitle="External links and references" />,
+        component: <Resources />,
       },
     ],
   },
