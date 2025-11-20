@@ -13,10 +13,22 @@ import {
   MdDescription,
   MdPayments,
   MdSettings,
+  MdLogin,
 } from 'react-icons/md';
 
 import DriverDashboard from './modules/drivers/DriverDashboard';
 import DriverModulePlaceholder from './modules/drivers/DriverModulePlaceholder';
+import LiveTracking from './modules/drivers/LiveTracking';
+import MyRoutes from './modules/drivers/MyRoutes';
+import PickupDrop from './modules/drivers/PickupDrop';
+import VehicleChecklist from './modules/drivers/VehicleChecklist';
+import IncidentsSafety from './modules/drivers/IncidentsSafety';
+import ShiftAttendance from './modules/drivers/ShiftAttendance';
+import DriverCommunications from './modules/drivers/DriverCommunications';
+import DriverDocuments from './modules/drivers/DriverDocuments';
+import DriverSalary from './modules/drivers/DriverSalary';
+import DriverSettings from './modules/drivers/DriverSettings';
+import SMSLogin from './modules/authentication/Login';
 
 const driverRoutes = [
   {
@@ -31,70 +43,77 @@ const driverRoutes = [
     layout: '/driver',
     path: '/routes',
     icon: <Icon as={MdAltRoute} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="My Routes" subtitle="Assigned routes with stop lists" />,
+    component: <MyRoutes />,
   },
   {
     name: 'Live Tracking',
     layout: '/driver',
     path: '/live-tracking',
     icon: <Icon as={MdMap} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Live Tracking" subtitle="Vehicle position, speed, last update" />,
+    component: <LiveTracking />,
   },
   {
     name: 'Student Pickup/Drop',
     layout: '/driver',
     path: '/pickup-drop',
     icon: <Icon as={MdPeople} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Student Pickup/Drop" subtitle="Stop-wise list, OTP/PIN verification, photo proof" />,
+    component: <PickupDrop />,
   },
   {
     name: 'Vehicle Checklist',
     layout: '/driver',
     path: '/checklist',
     icon: <Icon as={MdListAlt} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Vehicle Checklist" subtitle="Pre/Post-trip checks, documents, maintenance" />,
+    component: <VehicleChecklist />,
   },
   {
     name: 'Incidents & Safety',
     layout: '/driver',
     path: '/incidents',
     icon: <Icon as={MdReportProblem} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Incidents & Safety" subtitle="Report incident, view status" />,
+    component: <IncidentsSafety />,
   },
   {
     name: 'Shift & Attendance',
     layout: '/driver',
     path: '/shift',
     icon: <Icon as={MdAccessTime} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Shift & Attendance" subtitle="Start/End shift, history, leave" />,
+    component: <ShiftAttendance />,
   },
   {
     name: 'Communications',
     layout: '/driver',
     path: '/communications',
     icon: <Icon as={MdMessage} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Communications" subtitle="Messages and broadcast alerts" />,
+    component: <DriverCommunications />,
   },
   {
     name: 'Documents',
     layout: '/driver',
     path: '/documents',
     icon: <Icon as={MdDescription} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Documents" subtitle="Upload license and docs with expiry alerts" />,
+    component: <DriverDocuments />,
   },
   {
     name: 'Salary',
     layout: '/driver',
     path: '/salary',
     icon: <Icon as={MdPayments} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Salary" subtitle="Monthly payslip and history" />,
+    component: <DriverSalary />,
   },
   {
     name: 'Settings',
     layout: '/driver',
     path: '/settings',
     icon: <Icon as={MdSettings} width="20px" height="20px" color="inherit" />,
-    component: () => <DriverModulePlaceholder title="Settings" subtitle="Profile and preferences" />,
+    component: <DriverSettings />,
+  },
+  {
+    name: 'Sign In',
+    layout: '/auth',
+    path: '/sign-in',
+    icon: <Icon as={MdLogin} width="20px" height="20px" color="inherit" />,
+    component: <SMSLogin />,
   },
 ];
 

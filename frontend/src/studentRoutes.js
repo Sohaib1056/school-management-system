@@ -20,6 +20,7 @@ import {
   MdSettings,
   MdLock,
   MdNotifications,
+  MdLogin,
 } from 'react-icons/md';
 
 import StudentDashboard from './modules/students/StudentDashboard';
@@ -57,6 +58,7 @@ import LibraryFines from './modules/students/library/Fines';
 import ProfileInfo from './modules/students/settings/ProfileInfo';
 import PasswordPage from './modules/students/settings/Password';
 import NotificationsPage from './modules/students/settings/Notifications';
+import SMSLogin from './modules/authentication/Login';
 
 const studentRoutes = [
   {
@@ -390,6 +392,13 @@ const studentRoutes = [
         component: <NotificationsPage />,
       },
     ],
+  },
+  {
+    name: 'Sign In',
+    layout: '/auth',
+    path: '/sign-in',
+    icon: <Icon as={MdLogin} width="20px" height="20px" color="inherit" />,
+    component: <SMSLogin />,
   },
 ];
 

@@ -25,6 +25,7 @@ export default function Default(props) {
     // optional mini graph data for percentage cards
     trendData,
     trendColor,
+    trendFormatter,
     compact,
   } = props;
 
@@ -102,7 +103,7 @@ export default function Default(props) {
       {/* Bottom row: full-width sparkline graph */}
       {trendData && trendData.length > 0 && (
         <Box w='100%' h={compact ? '36px' : '48px'} mt={compact ? 3 : 4}>
-          <SparklineChart data={trendData} color={trendColor} height={compact ? 36 : 48} />
+          <SparklineChart data={trendData} color={trendColor} height={compact ? 36 : 48} valueFormatter={trendFormatter} />
         </Box>
       )}
     </Card>

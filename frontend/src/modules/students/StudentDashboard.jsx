@@ -1,15 +1,17 @@
 import React from 'react';
 import { Box, Flex, SimpleGrid, Text, Button, HStack, VStack, Badge, Icon, useColorModeValue } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/card/Card';
 import MiniStatistics from '../../components/card/MiniStatistics';
 import IconBox from '../../components/icons/IconBox';
-import { MdClass, MdCheckCircle, MdAssignment, MdOutlineEvent, MdNotificationsActive } from 'react-icons/md';
+import { MdClass, MdCheckCircle, MdAssignment, MdOutlineEvent, MdNotificationsActive, MdLogin } from 'react-icons/md';
 import BarChart from '../../components/charts/BarChart';
 import LineAreaChart from '../../components/charts/LineAreaChart';
 import { mockTodayClasses } from '../../utils/mockData';
 
 export default function StudentDashboard() {
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
+  const navigate = useNavigate();
 
   const stats = {
     todaysClasses: mockTodayClasses.length,
@@ -21,8 +23,13 @@ export default function StudentDashboard() {
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
-      <Text fontSize='2xl' fontWeight='bold' mb='8px'>Student Dashboard</Text>
-      <Text fontSize='md' color={textSecondary} mb='20px'>Your classes, assignments and updates</Text>
+      <Flex align='center' justify='space-between' mb='20px'>
+        <Box>
+          <Text fontSize='2xl' fontWeight='bold' mb='4px'>Student Dashboard</Text>
+          <Text fontSize='md' color={textSecondary}>Your classes, assignments and updates</Text>
+        </Box>
+        <Button size='sm' colorScheme='blue' leftIcon={<MdLogin />} onClick={()=>navigate('/auth/sign-in')}>Sign In</Button>
+      </Flex>
 
       <Box mb='20px'>
         <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing='16px'>
@@ -44,6 +51,7 @@ export default function StudentDashboard() {
               value={`${stats.attendance}%`}
               trendData={[88,90,91,92,92]}
               trendColor='#01B574'
+              trendFormatter={(v)=>`${v}%`}
             />
           </Box>
           <Box>
@@ -122,7 +130,7 @@ export default function StudentDashboard() {
               colors: ['#01B574'],
               dataLabels: { enabled: false },
               grid: { padding: { left: 12, right: 12 } },
-              tooltip: { enabled: false },
+              tooltip: { enabled: true, shared: true, intersect: false, y: { formatter: (v)=>`${v}%` } },
             }}
           />
         </Card>

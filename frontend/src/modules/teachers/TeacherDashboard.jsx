@@ -1,14 +1,16 @@
 import React from 'react';
 import { Box, Flex, SimpleGrid, Text, Button, HStack, VStack, Icon, Badge, useColorModeValue } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/card/Card';
 import MiniStatistics from '../../components/card/MiniStatistics';
 import IconBox from '../../components/icons/IconBox';
-import { MdClass, MdPeople, MdCheckCircle, MdAssignment, MdWarningAmber, MdAdd, MdEvent, MdUploadFile, MdMessage } from 'react-icons/md';
+import { MdClass, MdPeople, MdCheckCircle, MdAssignment, MdWarningAmber, MdAdd, MdEvent, MdUploadFile, MdMessage, MdLogin } from 'react-icons/md';
 import LineChart from '../../components/charts/LineChart';
 import BarChart from '../../components/charts/BarChart';
 
 export default function TeacherDashboard() {
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
+  const navigate = useNavigate();
 
   // Mock quick stats
   const stats = {
@@ -55,8 +57,13 @@ export default function TeacherDashboard() {
 
   return (
     <Box pt={{ base: '130px', md: '80px', xl: '80px' }} overflowX='hidden'>
-      <Text fontSize='2xl' fontWeight='bold' mb='8px'>Teacher Dashboard</Text>
-      <Text fontSize='md' color={textSecondary} mb='20px'>Your teaching overview and quick actions</Text>
+      <Flex align='center' justify='space-between' mb='20px'>
+        <Box>
+          <Text fontSize='2xl' fontWeight='bold' mb='4px'>Teacher Dashboard</Text>
+          <Text fontSize='md' color={textSecondary}>Your teaching overview and quick actions</Text>
+        </Box>
+        <Button size='sm' colorScheme='blue' leftIcon={<MdLogin />} onClick={()=>navigate('/auth/sign-in')}>Sign In</Button>
+      </Flex>
 
       {/* Overview KPIs - single row with horizontal scroll */}
       <Box mb='20px'>

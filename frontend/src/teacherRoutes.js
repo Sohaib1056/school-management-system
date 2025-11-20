@@ -19,6 +19,7 @@ import {
   MdSettings,
   MdLock,
   MdNotifications,
+  MdLogin,
 } from 'react-icons/md';
 import TeacherDashboard from './modules/teachers/TeacherDashboard';
 import TeacherModulePlaceholder from './modules/teachers/TeacherModulePlaceholder';
@@ -54,6 +55,7 @@ import SalaryHistory from './modules/teachers/salary/History';
 import Profile from './modules/teachers/settings/Profile';
 import Password from './modules/teachers/settings/Password';
 import Notifications from './modules/teachers/settings/Notifications';
+import SMSLogin from './modules/authentication/Login';
 
 const teacherRoutes = [
   {
@@ -396,6 +398,13 @@ const teacherRoutes = [
         component: <Notifications />,
       },
     ],
+  },
+  {
+    name: 'Sign In',
+    layout: '/auth',
+    path: '/sign-in',
+    icon: <Icon as={MdLogin} width="20px" height="20px" color="inherit" />,
+    component: <SMSLogin />,
   },
 ];
 

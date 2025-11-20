@@ -6,7 +6,7 @@ import ReactApexChart from "react-apexcharts";
 // - data: number[]
 // - color?: string (hex or Chakra-resolved color string)
 // - height?: number
-function SparklineChart({ data, color = "#3965FF", height = 48 }) {
+function SparklineChart({ data, color = "#3965FF", height = 48, valueFormatter }) {
   if (!Array.isArray(data) || data.length === 0) return null;
 
   const series = [
@@ -27,6 +27,10 @@ function SparklineChart({ data, color = "#3965FF", height = 48 }) {
       curve: "smooth",
       width: 3,
     },
+    markers: {
+      size: 0,
+      hover: { size: 4 },
+    },
     fill: {
       type: "gradient",
       gradient: {
@@ -38,7 +42,14 @@ function SparklineChart({ data, color = "#3965FF", height = 48 }) {
     },
     colors: [color],
     dataLabels: { enabled: false },
-    tooltip: { enabled: false },
+    tooltip: {
+      enabled: true,
+      x: { show: false },
+      y: {
+        formatter: typeof valueFormatter === 'function' ? valueFormatter : (val) => `${val}`,
+      },
+      marker: { show: true },
+    },
     grid: { show: false },
     xaxis: { labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
     yaxis: { labels: { show: false } },
