@@ -42,6 +42,21 @@ import Notes from './modules/students/materials/Notes';
 import PDFs from './modules/students/materials/PDFs';
 import Videos from './modules/students/materials/Videos';
 import Resources from './modules/students/materials/Resources';
+import FeeStatus from './modules/students/fees/FeeStatus';
+import DueFee from './modules/students/fees/DueFee';
+import OnlinePayment from './modules/students/fees/OnlinePayment';
+import FeeReceipts from './modules/students/fees/FeeReceipts';
+import Announcements from './modules/students/announcements/Announcements';
+import Communication from './modules/students/communication/Communication';
+import EventsCalendar from './modules/students/events/EventsCalendar';
+import Competitions from './modules/students/events/Competitions';
+import Workshops from './modules/students/events/Workshops';
+import IssuedBooks from './modules/students/library/IssuedBooks';
+import LibraryDueDates from './modules/students/library/DueDates';
+import LibraryFines from './modules/students/library/Fines';
+import ProfileInfo from './modules/students/settings/ProfileInfo';
+import PasswordPage from './modules/students/settings/Password';
+import NotificationsPage from './modules/students/settings/Notifications';
 
 const studentRoutes = [
   {
@@ -240,28 +255,28 @@ const studentRoutes = [
         layout: '/student',
         path: '/fees/status',
         icon: <Icon as={MdPayments} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Fee Status" subtitle="Your current fee status" />,
+        component: <FeeStatus />,
       },
       {
         name: 'Due Fee',
         layout: '/student',
         path: '/fees/due',
         icon: <Icon as={MdPayments} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Due Fee" subtitle="Pending dues and reminders" />,
+        component: <DueFee />,
       },
       {
         name: 'Online Payment',
         layout: '/student',
         path: '/fees/pay',
         icon: <Icon as={MdPayments} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Online Payment" subtitle="Pay fees securely" />,
+        component: <OnlinePayment />,
       },
       {
         name: 'Fee Receipts',
         layout: '/student',
         path: '/fees/receipts',
         icon: <Icon as={MdPayments} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Fee Receipts" subtitle="Download receipts" />,
+        component: <FeeReceipts />,
       },
     ],
   },
@@ -272,7 +287,7 @@ const studentRoutes = [
     layout: '/student',
     icon: <Icon as={MdCampaign} width="20px" height="20px" color="inherit" />,
     path: '/announcements',
-    component: () => <StudentModulePlaceholder title="Announcements" subtitle="School notices and alerts" />,
+    component: <Announcements />,
   },
 
   // 8) Communication
@@ -281,7 +296,7 @@ const studentRoutes = [
     layout: '/student',
     icon: <Icon as={MdMessage} width="20px" height="20px" color="inherit" />,
     path: '/communication',
-    component: () => <StudentModulePlaceholder title="Communication" subtitle="Messages with teachers" />,
+    component: <Communication />,
   },
 
   // 9) Events & Activities
@@ -296,21 +311,21 @@ const studentRoutes = [
         layout: '/student',
         path: '/events/calendar',
         icon: <Icon as={MdEvent} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Events Calendar" subtitle="School events and holidays" />,
+        component: <EventsCalendar />,
       },
       {
         name: 'Competitions',
         layout: '/student',
         path: '/events/competitions',
         icon: <Icon as={MdEmojiEvents} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Competitions" subtitle="Contests and challenges" />,
+        component: <Competitions />,
       },
       {
         name: 'Workshops',
         layout: '/student',
         path: '/events/workshops',
         icon: <Icon as={MdEvent} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Workshops" subtitle="Learning activities" />,
+        component: <Workshops />,
       },
     ],
   },
@@ -327,21 +342,21 @@ const studentRoutes = [
         layout: '/student',
         path: '/library/issued',
         icon: <Icon as={MdLibraryBooks} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Issued Books" subtitle="Books you have issued" />,
+        component: <IssuedBooks />,
       },
       {
         name: 'Due Dates',
         layout: '/student',
         path: '/library/due-dates',
         icon: <Icon as={MdLibraryBooks} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Library Due Dates" subtitle="Return deadlines and reminders" />,
+        component: <LibraryDueDates />,
       },
       {
         name: 'Fines',
         layout: '/student',
         path: '/library/fines',
         icon: <Icon as={MdLibraryBooks} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Library Fines" subtitle="Any penalties or dues" />,
+        component: <LibraryFines />,
       },
     ],
   },
@@ -358,21 +373,21 @@ const studentRoutes = [
         layout: '/student',
         path: '/settings/profile',
         icon: <Icon as={MdPerson} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Profile Info" subtitle="Manage your profile" />,
+        component: <ProfileInfo />,
       },
       {
         name: 'Password',
         layout: '/student',
         path: '/settings/password',
         icon: <Icon as={MdLock} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Password" subtitle="Change your password" />,
+        component: <PasswordPage />,
       },
       {
         name: 'Notifications',
         layout: '/student',
         path: '/settings/notifications',
         icon: <Icon as={MdNotifications} width="16px" height="16px" color="inherit" />,
-        component: () => <StudentModulePlaceholder title="Notifications" subtitle="Notification preferences" />,
+        component: <NotificationsPage />,
       },
     ],
   },

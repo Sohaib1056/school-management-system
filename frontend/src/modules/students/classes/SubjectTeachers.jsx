@@ -65,7 +65,6 @@ export default function SubjectTeachers() {
           </VStack>
         </Card>
       </SimpleGrid>
-
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing='16px'>
         {items.map((t, i) => (
           <Card key={i} p='16px'>
