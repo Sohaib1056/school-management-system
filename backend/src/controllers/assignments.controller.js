@@ -1,0 +1,47 @@
+import * as assignments from '../services/assignments.service.js';
+
+export const list = async (req, res, next) => {
+  try {
+    const { page = 1, pageSize = 50, q } = req.query;
+    const result = await assignments.list({ page: Number(page), pageSize: Number(pageSize), q });
+    return res.json(result);
+  } catch (e) { next(e); }
+};
+
+export const getById = async (req, res, next) => {
+  try {
+    const a = await assignments.getById(Number(req.params.id));
+    if (!a) return res.status(404).json({ message: 'Assignment not found' });
+    return res.json(a);
+  } catch (e) { next(e); }
+};
+
+export const create = async (req, res, next) => {
+  try {
+    const created = await assignments.create(req.body, req.user);
+    return res.status(201).json(created);
+  } catch (e) { next(e); }
+};
+
+export const update = async (req, res, next) => {
+  try {
+    const updated = await assignments.update(Number(req.params.id), req.body);
+    if (!updated) return res.status(404).json({ message: 'Assignment not found' });
+    return res.json(updated);
+  } catch (e) { next(e); }
+};
+
+export const remove = async (req, res, next) => {
+  try {
+    const ok = await assignments.remove(Number(req.params.id));
+    if (!ok) return res.status(404).json({ message: 'Assignment not found' });
+    return res.json({ success: true });
+  } catch (e) { next(e); }
+};
+
+export const submitWork = async (req, res, next) => {
+  try {
+    const submission = await assignments.submitWork(Number(req.params.id), req.user.id, req.body);
+    return res.status(201).json(submission);
+  } catch (e) { next(e); }
+};
