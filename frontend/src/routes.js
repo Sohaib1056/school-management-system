@@ -7,6 +7,7 @@ import { getSMSRoutes } from './smsRoutesConfig';
 
 // Auth Imports
 import SMSLogin from './modules/authentication/Login';
+import SMSSignUp from './modules/authentication/SignUp';
 
 // Get SMS routes from configuration
 const smsRoutes = getSMSRoutes();
@@ -21,6 +22,13 @@ const routes = [
     path: '/sign-in',
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: <SMSLogin />,
+  },
+  {
+    name: 'Sign Up',
+    layout: '/auth',
+    path: '/sign-up',
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: <SMSSignUp />,
   },
 ];
 

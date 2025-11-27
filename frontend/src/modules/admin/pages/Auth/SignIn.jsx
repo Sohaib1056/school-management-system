@@ -83,6 +83,12 @@ export default function SignIn({ redirectTo = '/admin/dashboard' }) {
                 <Link color='blue.500'>Forgot password?</Link>
               </Flex>
               <Button colorScheme='blue' leftIcon={<MdLogin />} isLoading={loading} onClick={handleSignIn}>Sign In</Button>
+              <Flex align='center' justify='space-between' mt={2}>
+                <Text color={textColorSecondary} fontSize='sm'>Don't have an account?</Text>
+                <Link color='blue.500' fontSize='sm' onClick={() => navigate('/auth/sign-up')}>
+                  Sign up
+                </Link>
+              </Flex>
               <Divider />
               <Text color={textColorSecondary} fontSize='xs'>MINDSPIRE School Management System · Version 1.0.0</Text>
             </VStack>

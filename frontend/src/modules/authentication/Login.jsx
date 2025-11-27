@@ -264,6 +264,16 @@ function SignIn() {
                 loadingText='Signing in...'>
                 Sign In
               </Button>
+              <Flex justifyContent='center' mb='24px'>
+                <Text color={textColorSecondary} fontSize='sm'>
+                  Don't have an account?{' '}
+                  <NavLink to='/auth/sign-up'>
+                    <Text as='span' color={brandStars} fontWeight='500'>
+                      Sign up
+                    </Text>
+                  </NavLink>
+                </Text>
+              </Flex>
             </FormControl>
           </form>
           

@@ -172,6 +172,10 @@ export const authRoutes = [
     path: 'sign-in',
     component: lazy(() => import('./modules/authentication/Login')),
   },
+  {
+    path: 'sign-up',
+    component: lazy(() => import('./modules/admin/pages/Auth/SignUp')),
+  },
 ];
 
 // Public Routes (accessible without authentication)

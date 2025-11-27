@@ -22,7 +22,8 @@ const withTimeout = (promise, ms) => {
   };
 };
 
-const baseURL = (config.API_BASE_URL || '').replace(/\/$/, '');
+// If VITE_API_URL is not set, default to the backend dev URL
+const baseURL = (config.API_BASE_URL || 'http://localhost:5000/api').replace(/\/$/, '');
 
 const request = async (method, url, { params, data, headers } = {}) => {
   const qs = params
