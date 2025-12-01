@@ -34,6 +34,27 @@ async function seed() {
        ON CONFLICT DO NOTHING`
     );
 
+    const defaultSubjects = [
+      { name: 'Mathematics', code: 'MATH', department: 'Science & Mathematics' },
+      { name: 'Physics', code: 'PHYS', department: 'Science & Mathematics' },
+      { name: 'Chemistry', code: 'CHEM', department: 'Science & Mathematics' },
+      { name: 'Biology', code: 'BIO', department: 'Science & Mathematics' },
+      { name: 'English', code: 'ENG', department: 'Languages' },
+      { name: 'History', code: 'HIST', department: 'Humanities' },
+      { name: 'Geography', code: 'GEO', department: 'Humanities' },
+      { name: 'Computer Science', code: 'CS', department: 'Technology' },
+    ];
+
+    for (const subject of defaultSubjects) {
+      await client.query(
+        `INSERT INTO subjects (name, code, department)
+         VALUES ($1,$2,$3)
+         ON CONFLICT (name)
+         DO UPDATE SET code = EXCLUDED.code, department = EXCLUDED.department, updated_at = NOW()`,
+        [subject.name, subject.code, subject.department]
+      );
+    }
+
     await client.query('COMMIT');
     console.log('Seed completed.');
   } catch (e) {
